@@ -49,6 +49,8 @@ extern int DTD_DATA_len;
 
 #include "wayland-util.h"
 
+#define PROGRAM_NAME "wayland-scanner"
+
 enum side {
 	CLIENT,
 	SERVER,
