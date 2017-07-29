@@ -1825,7 +1825,7 @@
     </event>
    </interface>
 
-  <interface name="wl_seat" version="8">
+  <interface name="wl_seat" version="9">
     <description summary="group of input devices">
       A seat is a group of keyboards, pointer and touch devices. This
       object is published as a global during start up, or when such a
@@ -1958,7 +1958,7 @@
 
   </interface>
 
-  <interface name="wl_pointer" version="8">
+  <interface name="wl_pointer" version="9">
     <description summary="pointer input device">
       The wl_pointer interface represents one or more input devices,
       such as mice, which control the pointer location and pointer_focus
@@ -2315,9 +2315,65 @@
       <arg name="axis" type="uint" enum="axis" summary="axis type"/>
       <arg name="value120" type="int" summary="scroll distance as fraction of 120"/>
     </event>
+
+    <!-- Version 9 additions -->
+
+    <enum name="axis_relative_direction">
+      <description summary="axis relative direction">
+	This specifies the direction of the physical motion that caused a
+	wl_pointer.axis event, relative to the wl_pointer.axis direction.
+      </description>
+      <entry name="identical" value="0"
+	  summary="physical motion matches axis direction"/>
+      <entry name="inverted" value="1"
+	  summary="physical motion is the inverse of the axis direction"/>
+    </enum>
+
+    <event name="axis_relative_direction" since="9">
+      <description summary="axis relative physical direction event">
+	Relative directional information of the entity causing the axis
+	motion.
+
+	For a wl_pointer.axis event, the wl_pointer.axis_relative_direction
+	event specifies the movement direction of the entity causing the
+	wl_pointer.axis event. For example:
+	- if a user's fingers on a touchpad move down and this
+	  causes a wl_pointer.axis vertical_scroll down event, the physical
+	  direction is 'identical'
+	- if a user's fingers on a touchpad move down and this causes a
+	  wl_pointer.axis vertical_scroll up scroll up event ('natural
+	  scrolling'), the physical direction is 'inverted'.
+
+	A client may use this information to adjust scroll motion of
+	components. Specifically, enabling natural scrolling causes the
+	content to change direction compared to traditional scrolling.
+	Some widgets like volume control sliders should usually match the
+	physical direction regardless of whether natural scrolling is
+	active. This event enables clients to match the scroll direction of
+	a widget to the physical direction.
+
+	This event does not occur on its own, it is coupled with a
+	wl_pointer.axis event that represents this axis value.
+	The protocol guarantees that each axis_relative_direction event is
+	always followed by exactly one axis event with the same
+	axis number within the same wl_pointer.frame. Note that the protocol
+	allows for other events to occur between the axis_relative_direction
+	and its coupled axis event.
+
+	The axis number is identical to the axis number in the associated
+	axis event.
+
+	The order of wl_pointer.axis_relative_direction,
+	wl_pointer.axis_discrete and wl_pointer.axis_source is not
+	guaranteed.
+      </description>
+      <arg name="axis" type="uint" enum="axis" summary="axis type"/>
+      <arg name="direction" type="uint" enum="axis_relative_direction"
+	  summary="physical direction relative to axis motion"/>
+    </event>
   </interface>
 
-  <interface name="wl_keyboard" version="8">
+  <interface name="wl_keyboard" version="9">
     <description summary="keyboard input device">
       The wl_keyboard interface represents one or more keyboards
       associated with a seat.
@@ -2444,7 +2500,7 @@
     </event>
   </interface>
 
-  <interface name="wl_touch" version="8">
+  <interface name="wl_touch" version="9">
     <description summary="touchscreen input device">
       The wl_touch interface represents a touchscreen
       associated with a seat.
