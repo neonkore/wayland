@@ -847,6 +847,7 @@
 
     <enum name="error">
       <entry name="role" value="0" summary="given wl_surface has another role"/>
+      <entry name="used_source" value="1" summary="source has already been used"/>
     </enum>
 
     <request name="start_drag">
@@ -876,6 +877,10 @@
 
 	The input region is ignored for wl_surfaces with the role of a
 	drag-and-drop icon.
+
+	The given source may not be used in any further set_selection or
+	start_drag requests. Attempting to reuse a previously-used source
+	may send a used_source error.
       </description>
       <arg name="source" type="object" interface="wl_data_source" allow-null="true" summary="data source for the eventual transfer"/>
       <arg name="origin" type="object" interface="wl_surface" summary="surface where the drag originates"/>
@@ -889,6 +894,10 @@
 	to the data from the source on behalf of the client.
 
 	To unset the selection, set the source to NULL.
+
+	The given source may not be used in any further set_selection or
+	start_drag requests. Attempting to reuse a previously-used source
+	may send a used_source error.
       </description>
       <arg name="source" type="object" interface="wl_data_source" allow-null="true" summary="data source for the selection"/>
       <arg name="serial" type="uint" summary="serial number of the event that triggered this request"/>
