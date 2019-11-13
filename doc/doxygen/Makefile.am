@@ -3,8 +3,10 @@
 
 noinst_DATA = \
               xml/Client/index.xml \
+              xml/Cursor/index.xml \
               xml/Server/index.xml \
               html/Client/index.html \
+              html/Cursor/index.html \
               html/Server/index.html
 dist_noinst_DATA = wayland.doxygen.in
 
@@ -16,6 +18,10 @@ scanned_src_files_Client = 				\
 	$(top_srcdir)/src/wayland-client.c	\
 	$(top_srcdir)/src/wayland-client.h	\
 	$(top_srcdir)/src/wayland-client-core.h
+
+scanned_src_files_Cursor = 				\
+	$(top_srcdir)/cursor/wayland-cursor.c	\
+	$(top_srcdir)/cursor/wayland-cursor.h
 
 scanned_src_files_Server = 				\
 	$(scanned_src_files_shared)			\
@@ -42,6 +48,9 @@ extra_doxygen_Client = \
 	$(top_builddir)/protocol/wayland-client-protocol.h \
 	$(extra_doxygen)
 
+extra_doxygen_Cursor = \
+	$(extra_doxygen)
+
 diagramsdir := $(srcdir)/dot
 diagramssrc := $(wildcard $(diagramsdir)/*.gv)
 diagrams := $(patsubst $(diagramsdir)/%,xml/%,$(diagramssrc:.gv=.png))
@@ -53,7 +62,7 @@ diagram_maps := $(patsubst $(diagramsdir)/%,xml/%,$(diagramssrc:.gv=.map))
 dist_man3_MANS = $(shell test -d man && find man/man3 -name "wl_*.3" -printf "man/man3/%P\n")
 
 # Listing various directories that might need to be created.
-alldirsrel := xml xml/Client xml/Server man/man3 html/Client html/Server
+alldirsrel := xml xml/Client xml/Server xml/Cursor man/man3 html/Client html/Server html/Cursor
 alldirs := $(patsubst %,$(CURDIR)/%,$(alldirsrel))
 
 $(diagrams): $(diagramssrc)
