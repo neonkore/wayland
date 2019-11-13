@@ -37,11 +37,11 @@ struct wl_buffer;
 struct wl_shm;
 
 struct wl_cursor_image {
-	uint32_t width;		/* actual width */
-	uint32_t height;	/* actual height */
-	uint32_t hotspot_x;	/* hot spot x (must be inside image) */
-	uint32_t hotspot_y;	/* hot spot y (must be inside image) */
-	uint32_t delay;		/* animation delay to next frame (ms) */
+	uint32_t width;         /* actual width */
+	uint32_t height;        /* actual height */
+	uint32_t hotspot_x;     /* hot spot x (must be inside image) */
+	uint32_t hotspot_y;     /* hot spot y (must be inside image) */
+	uint32_t delay;         /* animation delay to next frame (ms) */
 };
 
 struct wl_cursor {
