@@ -1481,28 +1481,32 @@ static int
 wl_socket_init_for_display_name(struct wl_socket *s, const char *name)
 {
 	int name_size;
-	const char *runtime_dir;
+	const char *runtime_dir = "";
+	const char *separator = "";
 
-	runtime_dir = getenv("XDG_RUNTIME_DIR");
-	if (!runtime_dir) {
-		wl_log("error: XDG_RUNTIME_DIR not set in the environment\n");
+	if (name[0] != '/') {
+		runtime_dir = getenv("XDG_RUNTIME_DIR");
+		if (!runtime_dir) {
+			wl_log("error: XDG_RUNTIME_DIR not set in the environment\n");
 
-		/* to prevent programs reporting
-		 * "failed to add socket: Success" */
-		errno = ENOENT;
-		return -1;
+			/* to prevent programs reporting
+			 * "failed to add socket: Success" */
+			errno = ENOENT;
+			return -1;
+		}
+		separator = "/";
 	}
 
 	s->addr.sun_family = AF_LOCAL;
 	name_size = snprintf(s->addr.sun_path, sizeof s->addr.sun_path,
-			     "%s/%s", runtime_dir, name) + 1;
+			     "%s%s%s", runtime_dir, separator, name) + 1;
 
 	s->display_name = (s->addr.sun_path + name_size - 1) - strlen(name);
 
 	assert(name_size > 0);
 	if (name_size > (int)sizeof s->addr.sun_path) {
-		wl_log("error: socket path \"%s/%s\" plus null terminator"
-		       " exceeds 108 bytes\n", runtime_dir, name);
+		wl_log("error: socket path \"%s%s%s\" plus null terminator"
+		       " exceeds 108 bytes\n", runtime_dir, separator, name);
 		*s->addr.sun_path = 0;
 		/* to prevent programs reporting
 		 * "failed to add socket: Success" */
@@ -1641,14 +1645,17 @@ wl_display_add_socket_fd(struct wl_display *display, int sock_fd)
  * variable for the socket name. If WAYLAND_DISPLAY is not set, then default
  * wayland-0 is used.
  *
- * The Unix socket will be created in the directory pointed to by environment
- * variable XDG_RUNTIME_DIR. If XDG_RUNTIME_DIR is not set, then this function
- * fails and returns -1.
+ * If the socket name is a relative path, the Unix socket will be created in
+ * the directory pointed to by environment variable XDG_RUNTIME_DIR. If
+ * XDG_RUNTIME_DIR is not set, then this function fails and returns -1.
  *
- * The length of socket path, i.e., the path set in XDG_RUNTIME_DIR and the
- * socket name, must not exceed the maximum length of a Unix socket path.
- * The function also fails if the user do not have write permission in the
- * XDG_RUNTIME_DIR path or if the socket name is already in use.
+ * If the socket name is an absolute path, then it is used as-is for the
+ * the Unix socket.
+ *
+ * The length of the computed socket path must not exceed the maximum length
+ * of a Unix socket path.
+ * The function also fails if the user does not have write permission in the
+ * directory or if the path is already in use.
  *
  * \memberof wl_display
  */
