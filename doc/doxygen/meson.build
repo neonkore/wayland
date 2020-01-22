@@ -38,6 +38,11 @@ server_files = files([
 	'../../src/wayland-shm.c',
 ])
 
+cursor_files = files([
+	'../../cursor/wayland-cursor.c',
+	'../../cursor/wayland-cursor.h',
+])
+
 extra_client_files = [
 	'mainpage.dox',
 	wayland_client_protocol_h,
@@ -48,6 +53,10 @@ extra_server_files = [
 	wayland_server_protocol_h,
 ]
 
+extra_cursor_files = [
+	'mainpage.dox',
+]
+
 gen_doxygen = find_program('gen-doxygen.py')
 
 subdir('xml')
@@ -56,6 +65,7 @@ formats = {
 	'html': {
 		'Client': shared_files + client_files + extra_client_files,
 		'Server': shared_files + server_files + extra_server_files,
+		'Cursor': shared_files + cursor_files + extra_cursor_files,
 	},
 }
 
@@ -86,7 +96,7 @@ foreach f_name, sections: formats
 	endforeach
 endforeach
 
-man_files = shared_files + server_files + client_files
+man_files = shared_files + server_files + client_files + cursor_files
 custom_target(
 	'man-pages-3',
 	command: [
