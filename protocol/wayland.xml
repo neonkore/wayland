@@ -2240,6 +2240,9 @@
 	The time argument is a timestamp with millisecond
 	granularity, with an undefined base.
 
+	The key is a platform-specific key code that can be interpreted
+	by feeding it to the keyboard mapping (see the keymap event).
+
 	If this event produces a change in modifiers, then the resulting
 	wl_keyboard.modifiers event must be sent after this event.
       </description>
