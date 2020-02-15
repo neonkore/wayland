@@ -157,13 +157,13 @@ os_create_anonymous_file(off_t size)
 
 #ifdef HAVE_POSIX_FALLOCATE
 	/* 
-	 * Filesystems that do support fallocate will return EOPNOTSUPP.
-	 * In this case we need to fall back to ftruncate
+	 * Filesystems that do support fallocate will return EINVAL or
+	 * EOPNOTSUPP. In this case we need to fall back to ftruncate
 	 */
 	ret = posix_fallocate(fd, 0, size);
 	if (ret == 0) {
 		return fd;
-	} else if (ret != EOPNOTSUPP) {
+	} else if (ret != EINVAL && ret != EOPNOTSUPP) {
 		close(fd);
 		errno = ret;
 		return -1;
