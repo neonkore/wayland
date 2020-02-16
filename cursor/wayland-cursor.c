@@ -83,17 +83,7 @@ err_free:
 static int
 shm_pool_resize(struct shm_pool *pool, int size)
 {
-#ifdef HAVE_POSIX_FALLOCATE
-	/* 
-	 * Filesystems that do support fallocate will return EINVAL or
-	 * EOPNOTSUPP. In this case we need to fall back to ftruncate
-	 */
-	errno = posix_fallocate(pool->fd, 0, size);
-	if (errno != 0 && errno != EINVAL && errno != EOPNOTSUPP)
-		return 0;
-#endif
-
-	if (ftruncate(pool->fd, size) < 0)
+	if (os_resize_anonymous_file(pool->fd, size) < 0)
 		return 0;
 
 	wl_shm_pool_resize(pool->pool, size);
