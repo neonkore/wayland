@@ -1378,6 +1378,7 @@
       </description>
       <entry name="invalid_scale" value="0" summary="buffer scale value is invalid"/>
       <entry name="invalid_transform" value="1" summary="buffer transform value is invalid"/>
+      <entry name="invalid_size" value="2" summary="buffer size is invalid"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -1392,8 +1393,9 @@
 
 	The new size of the surface is calculated based on the buffer
 	size transformed by the inverse buffer_transform and the
-	inverse buffer_scale. This means that the supplied buffer
-	must be an integer multiple of the buffer_scale.
+	inverse buffer_scale. This means that at commit time the supplied
+	buffer size must be an integer multiple of the buffer_scale. If
+	that's not the case, an invalid_size error is sent.
 
 	The x and y arguments specify the location of the new pending
 	buffer's upper left corner, relative to the current buffer's upper
