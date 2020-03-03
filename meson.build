@@ -84,7 +84,9 @@ subdir('src')
 if get_option('libraries')
 	subdir('cursor')
 	subdir('egl')
-	subdir('tests')
+	if get_option('tests')
+		subdir('tests')
+	endif
 	if get_option('documentation')
 		subdir('doc')
 	endif
