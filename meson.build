@@ -84,19 +84,20 @@ if get_option('libraries')
 	subdir('cursor')
 	subdir('egl')
 	subdir('tests')
+	if get_option('documentation')
+		subdir('doc')
+	endif
 endif
 
-if get_option('documentation')
-	subdir('doc')
+if get_option('scanner')
+	install_data([
+		'wayland-scanner.mk',
+		'protocol/wayland.xml',
+		'protocol/wayland.dtd',
+	])
+
+	install_data(
+		[ 'wayland-scanner.m4' ],
+		install_dir: join_paths(get_option('prefix'), get_option('datadir'), 'aclocal'),
+	)
 endif
-
-install_data([
-	'wayland-scanner.mk',
-	'protocol/wayland.xml',
-	'protocol/wayland.dtd',
-])
-
-install_data(
-	[ 'wayland-scanner.m4' ],
-	install_dir: join_paths(get_option('prefix'), get_option('datadir'), 'aclocal'),
-)

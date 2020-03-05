@@ -4,12 +4,6 @@ wayland_version_h.set('WAYLAND_VERSION', meson.project_version())
 wayland_version_h.set('WAYLAND_VERSION_MAJOR', wayland_version[0].to_int())
 wayland_version_h.set('WAYLAND_VERSION_MINOR', wayland_version[1].to_int())
 wayland_version_h.set('WAYLAND_VERSION_MICRO', wayland_version[2].to_int())
-configure_file(
-	input: 'wayland-version.h.in',
-	output: 'wayland-version.h',
-	configuration: wayland_version_h,
-	install_dir: join_paths(get_option('prefix'), get_option('includedir'))
-)
 
 wayland_util = static_library(
 	'wayland-util',
@@ -21,40 +15,48 @@ wayland_util_dep = declare_dependency(
 	include_directories: include_directories('.')
 )
 
-# wayland-scanner
+if get_option('scanner')
+	# wayland-scanner
 
-configure_file(
-	input: '../protocol/wayland.dtd',
-	output: 'wayland.dtd.embed',
-	copy: true
-)
+	configure_file(
+		input: 'wayland-version.h.in',
+		output: 'wayland-version.h',
+		configuration: wayland_version_h,
+	)
 
-wayland_scanner_sources = [ 'scanner.c', 'dtddata.S' ]
-wayland_scanner_includes = [ root_inc, protocol_inc ]
+	configure_file(
+		input: '../protocol/wayland.dtd',
+		output: 'wayland.dtd.embed',
+		copy: true
+	)
 
-wayland_scanner = executable(
-	'wayland-scanner',
-	wayland_scanner_sources,
-	c_args: [ '-include', 'config.h' ],
-	include_directories: wayland_scanner_includes,
-	dependencies: [ scanner_deps, wayland_util_dep, ],
-	install: true
-)
+	wayland_scanner_sources = [ 'scanner.c', 'dtddata.S' ]
+	wayland_scanner_includes = [ root_inc, protocol_inc ]
 
-pkgconfig.generate(
-	name: 'Wayland Scanner',
-	description: 'Wayland scanner',
-	version: meson.project_version(),
-	variables: [
-		'datarootdir=' + join_paths('${prefix}', get_option('datadir')),
-		'pkgdatadir=' + join_paths('${datarootdir}', meson.project_name()),
-		'bindir=' + join_paths('${prefix}', get_option('bindir')),
-		'wayland_scanner=${bindir}/wayland-scanner'
-	],
-	filebase: 'wayland-scanner'
-)
+	wayland_scanner = executable(
+		'wayland-scanner',
+		wayland_scanner_sources,
+		c_args: [ '-include', 'config.h' ],
+		include_directories: wayland_scanner_includes,
+		dependencies: [ scanner_deps, wayland_util_dep, ],
+		install: true
+	)
 
-if meson.is_cross_build()
+	pkgconfig.generate(
+		name: 'Wayland Scanner',
+		description: 'Wayland scanner',
+		version: meson.project_version(),
+		variables: [
+			'datarootdir=' + join_paths('${prefix}', get_option('datadir')),
+			'pkgdatadir=' + join_paths('${datarootdir}', meson.project_name()),
+			'bindir=' + join_paths('${prefix}', get_option('bindir')),
+			'wayland_scanner=${bindir}/wayland-scanner'
+		],
+		filebase: 'wayland-scanner'
+	)
+endif
+
+if meson.is_cross_build() or not get_option('scanner')
 	scanner_dep = dependency('wayland-scanner', native: true, version: meson.project_version())
 	wayland_scanner_for_build = find_program(scanner_dep.get_pkgconfig_variable('wayland_scanner'))
 else
@@ -62,6 +64,19 @@ else
 endif
 
 if get_option('libraries')
+	# wayland libraries
+
+	# Duplicated inside the "if get_option('scanner')" block above since we
+	# still need the wayland-version.h to build the scanner, but do not want
+	# to install it. Meson 0.50 adds "install: bool" which will let us
+	# deduplicate this block.
+	configure_file(
+		input: 'wayland-version.h.in',
+		output: 'wayland-version.h',
+		configuration: wayland_version_h,
+		install_dir: join_paths(get_option('prefix'), get_option('includedir'))
+	)
+
 	mathlib_dep = cc.find_library('m', required: false)
 	threads_dep = dependency('threads', required: false)
 
