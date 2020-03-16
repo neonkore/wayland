@@ -4,6 +4,14 @@ wayland_version_h.set('WAYLAND_VERSION', meson.project_version())
 wayland_version_h.set('WAYLAND_VERSION_MAJOR', wayland_version[0].to_int())
 wayland_version_h.set('WAYLAND_VERSION_MINOR', wayland_version[1].to_int())
 wayland_version_h.set('WAYLAND_VERSION_MICRO', wayland_version[2].to_int())
+configure_file(
+	input: 'wayland-version.h.in',
+	output: 'wayland-version.h',
+	configuration: wayland_version_h,
+	install: get_option('libraries'),
+	install_dir: join_paths(get_option('prefix'), get_option('includedir'))
+)
+
 
 wayland_util = static_library(
 	'wayland-util',
@@ -17,12 +25,6 @@ wayland_util_dep = declare_dependency(
 
 if get_option('scanner')
 	# wayland-scanner
-
-	configure_file(
-		input: 'wayland-version.h.in',
-		output: 'wayland-version.h',
-		configuration: wayland_version_h,
-	)
 
 	configure_file(
 		input: '../protocol/wayland.dtd',
@@ -65,17 +67,6 @@ endif
 
 if get_option('libraries')
 	# wayland libraries
-
-	# Duplicated inside the "if get_option('scanner')" block above since we
-	# still need the wayland-version.h to build the scanner, but do not want
-	# to install it. Meson 0.50 adds "install: bool" which will let us
-	# deduplicate this block.
-	configure_file(
-		input: 'wayland-version.h.in',
-		output: 'wayland-version.h',
-		configuration: wayland_version_h,
-		install_dir: join_paths(get_option('prefix'), get_option('includedir'))
-	)
 
 	mathlib_dep = cc.find_library('m', required: false)
 	threads_dep = dependency('threads', required: false)
