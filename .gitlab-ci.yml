@@ -1,4 +1,4 @@
-image: debian:stretch
+image: debian:buster
 
 stages:
   - build
@@ -9,9 +9,9 @@ before_script:
   - echo '#!/bin/sh' > /usr/sbin/policy-rc.d
   - echo 'exit 101' >> /usr/sbin/policy-rc.d
   - chmod +x /usr/sbin/policy-rc.d
-  - echo 'deb http://deb.debian.org/debian stretch-backports main' >> /etc/apt/sources.list
+  - echo 'deb http://deb.debian.org/debian buster-backports main' >> /etc/apt/sources.list
   - apt-get update
-  - apt-get -y --no-install-recommends install build-essential automake autoconf libtool pkg-config libexpat1-dev libffi-dev libxml2-dev doxygen graphviz xmlto xsltproc docbook-xsl meson/stretch-backports
+  - apt-get -y --no-install-recommends install build-essential automake autoconf libtool pkg-config libexpat1-dev libffi-dev libxml2-dev doxygen graphviz xmlto xsltproc docbook-xsl meson/buster-backports
 
 build-native-autotools:
   stage: build
