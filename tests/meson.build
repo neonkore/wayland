@@ -54,7 +54,7 @@ benchmark(
 	executable(
 		'fixed-benchmark',
 		'fixed-benchmark.c',
-		dependencies: test_runner_dep
+		dependencies: [ test_runner_dep, rt_dep ]
 	)
 )
 

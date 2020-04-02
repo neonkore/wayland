@@ -77,7 +77,7 @@ if get_option('libraries')
 			'connection.c',
 			'wayland-os.c'
 		],
-		dependencies: [ ffi_dep, ]
+		dependencies: [ ffi_dep, rt_dep ]
 	)
 
 	wayland_private_dep = declare_dependency(
@@ -155,7 +155,8 @@ if get_option('libraries')
 			wayland_private_dep,
 			wayland_util_dep,
 			mathlib_dep,
-			threads_dep
+			threads_dep,
+			rt_dep
 		],
 		include_directories: root_inc,
 		install: true

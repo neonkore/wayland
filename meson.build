@@ -56,6 +56,14 @@ if get_option('libraries')
 			error('@0@ is needed to compile Wayland libraries'.format(d['symbol']))
 		endif
 	endforeach
+
+	rt_dep = []
+	if not cc.has_function('clock_gettime', prefix: '#include <time.h>')
+		rt_dep = cc.find_library('rt')
+		if not cc.has_function('clock_gettime', prefix: '#include <time.h>', dependencies: rt_dep)
+			error('clock_gettime not found')
+		endif
+	endif
 endif
 
 scanner_deps = [ dependency('expat') ]
