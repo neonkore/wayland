@@ -61,8 +61,8 @@
     <para>
        Possible examples for session compositors include
       <itemizedlist>
-        <listitem>
-          <para>
+	<listitem>
+	  <para>
 	    gnome-shell
 	  </para>
 	</listitem>
