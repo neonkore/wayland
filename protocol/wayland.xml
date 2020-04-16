@@ -2547,6 +2547,10 @@
 	current.  In other words, the current mode is always the last
 	mode that was received with the current flag set.
 
+	Non-current modes are deprecated. A compositor can decide to only
+	advertise the current mode and never send other modes. Clients
+	should not rely on non-current modes.
+
 	The size of a mode is given in physical hardware units of
 	the output device. This is not necessarily the same as
 	the output size in the global compositor space. For instance,
