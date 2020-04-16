@@ -1113,6 +1113,13 @@ wl_display_connect_to_fd(int fd)
  * its value will be replaced with the WAYLAND_DISPLAY environment
  * variable if it is set, otherwise display "wayland-0" will be used.
  *
+ * If WAYLAND_SOCKET is set, it's interpreted as a file descriptor number
+ * referring to an already opened socket. In this case, the socket is used
+ * as-is and \c name is ignored.
+ *
+ * If \c name is a relative path, then the socket is opened relative to
+ * the XDG_RUNTIME_DIR directory.
+ *
  * If \c name is an absolute path, then that path is used as-is for
  * the location of the socket at which the Wayland server is listening;
  * no qualification inside XDG_RUNTIME_DIR is attempted.
