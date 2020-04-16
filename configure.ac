@@ -190,7 +190,6 @@ AC_CONFIG_FILES([Makefile
 		 doc/Makefile
 		 doc/publican/Makefile
 		 doc/doxygen/Makefile
-		 doc/man/Makefile
 		 egl/wayland-egl.pc
 		 egl/wayland-egl-backend.pc
 		 src/wayland-server-uninstalled.pc

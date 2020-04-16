@@ -327,7 +327,6 @@ EXTRA_DIST += tests/scanner-test.sh			\
 	doc/doxygen/xml/meson.build			\
 	doc/doxygen/xml/Client/meson.build		\
 	doc/doxygen/xml/Server/meson.build		\
-	doc/man/meson.build				\
 	doc/publican/meson.build			\
 	doc/publican/sources/meson.build		\
 	egl/meson.build					\

@@ -34,5 +34,4 @@ publican_install_prefix = join_paths(
 publican_html_dir = 'html'
 
 subdir('doxygen')
-subdir('man')
 subdir('publican')
