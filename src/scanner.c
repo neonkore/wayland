@@ -1636,6 +1636,8 @@ emit_header(struct protocol *protocol, enum side side)
 	printf("\n");
 
 	wl_list_for_each(i, &protocol->interface_list, link) {
+		printf("#ifndef %s_INTERFACE\n", i->uppercase_name);
+		printf("#define %s_INTERFACE\n", i->uppercase_name);
 		printf("/**\n"
 		       " * @page page_iface_%s %s\n",
 		       i->name, i->name);
@@ -1656,6 +1658,7 @@ emit_header(struct protocol *protocol, enum side side)
 		printf(" */\n");
 		printf("extern const struct wl_interface "
 		       "%s_interface;\n", i->name);
+		printf("#endif\n");
 	}
 
 	printf("\n");
