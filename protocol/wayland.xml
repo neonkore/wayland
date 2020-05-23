@@ -2202,6 +2202,9 @@
       <description summary="enter event">
 	Notification that this seat's keyboard focus is on a certain
 	surface.
+
+	The compositor must send the wl_keyboard.modifiers event after this
+	event.
       </description>
       <arg name="serial" type="uint" summary="serial number of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" summary="surface gaining keyboard focus"/>
@@ -2233,6 +2236,9 @@
 	A key was pressed or released.
 	The time argument is a timestamp with millisecond
 	granularity, with an undefined base.
+
+	If this event produces a change in modifiers, then the resulting
+	wl_keyboard.modifiers event must be sent after this event.
       </description>
       <arg name="serial" type="uint" summary="serial number of the key event"/>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
