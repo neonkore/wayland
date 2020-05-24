@@ -2218,6 +2218,9 @@
 
 	The leave notification is sent before the enter notification
 	for the new focus.
+
+	After this event client must assume that all keys, including modifiers,
+	are lifted and also it must stop key repeating if there's some going on.
       </description>
       <arg name="serial" type="uint" summary="serial number of the leave event"/>
       <arg name="surface" type="object" interface="wl_surface" summary="surface that lost keyboard focus"/>
