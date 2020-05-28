@@ -1332,7 +1332,7 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target,
 				fprintf(stderr, "nil");
 			break;
 		case 'a':
-			fprintf(stderr, "array");
+			fprintf(stderr, "array[%zu]", closure->args[i].a->size);
 			break;
 		case 'h':
 			fprintf(stderr, "fd %d", closure->args[i].h);
