@@ -1743,6 +1743,14 @@
       <entry name="touch" value="4" summary="the seat has touch devices"/>
     </enum>
 
+    <enum name="error">
+      <description summary="wl_seat error values">
+	These errors can be emitted in response to wl_seat requests.
+      </description>
+      <entry name="missing_capability" value="0"
+	     summary="get_pointer, get_keyboard or get_touch called on seat without the matching capability"/>
+    </enum>
+
     <event name="capabilities">
       <description summary="seat capabilities changed">
 	This is emitted whenever a seat gains or loses the pointer,
@@ -1781,7 +1789,8 @@
 	This request only takes effect if the seat has the pointer
 	capability, or has had the pointer capability in the past.
 	It is a protocol violation to issue this request on a seat that has
-	never had the pointer capability.
+	never had the pointer capability. The missing_capability error will
+	be sent in this case.
       </description>
       <arg name="id" type="new_id" interface="wl_pointer" summary="seat pointer"/>
     </request>
@@ -1794,7 +1803,8 @@
 	This request only takes effect if the seat has the keyboard
 	capability, or has had the keyboard capability in the past.
 	It is a protocol violation to issue this request on a seat that has
-	never had the keyboard capability.
+	never had the keyboard capability. The missing_capability error will
+	be sent in this case.
       </description>
       <arg name="id" type="new_id" interface="wl_keyboard" summary="seat keyboard"/>
     </request>
@@ -1807,7 +1817,8 @@
 	This request only takes effect if the seat has the touch
 	capability, or has had the touch capability in the past.
 	It is a protocol violation to issue this request on a seat that has
-	never had the touch capability.
+	never had the touch capability. The missing_capability error will
+	be sent in this case.
       </description>
       <arg name="id" type="new_id" interface="wl_touch" summary="seat touch interface"/>
     </request>
