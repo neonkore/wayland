@@ -179,7 +179,7 @@
       the related request is done.
     </description>
 
-    <event name="done">
+    <event name="done" type="destructor">
       <description summary="done event">
 	Notify the client when the related request is done.
       </description>
