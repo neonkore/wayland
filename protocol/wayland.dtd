@@ -10,6 +10,7 @@
   <!ATTLIST request since CDATA #IMPLIED>
 <!ELEMENT event (description?,arg*)>
   <!ATTLIST event name CDATA #REQUIRED>
+  <!ATTLIST event type CDATA #IMPLIED>
   <!ATTLIST event since CDATA #IMPLIED>
 <!ELEMENT enum (description?,entry*)>
   <!ATTLIST enum name CDATA #REQUIRED>
