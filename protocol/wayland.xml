@@ -829,7 +829,8 @@
 	for the eventual data transfer. If source is NULL, enter, leave
 	and motion events are sent only to the client that initiated the
 	drag and the client is expected to handle the data passing
-	internally.
+	internally. If source is destroyed, the drag-and-drop session will be
+	cancelled.
 
 	The origin surface is the surface where the drag originates and
 	the client must have an active implicit grab that matches the
