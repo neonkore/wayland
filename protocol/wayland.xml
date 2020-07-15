@@ -1609,6 +1609,12 @@
 	This is emitted whenever a surface's creation, movement, or resizing
 	results in it no longer having any part of it within the scanout region
 	of an output.
+
+	Clients should not use the number of outputs the surface is on for frame
+	throttling purposes. The surface might be hidden even if no leave event
+	has been sent, and the compositor might expect new surface content
+	updates even if no enter event has been sent. The frame event should be
+	used instead.
       </description>
       <arg name="output" type="object" interface="wl_output" summary="output left by the surface"/>
     </event>
