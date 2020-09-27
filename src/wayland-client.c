@@ -752,7 +752,7 @@ wl_proxy_marshal_array_constructor_versioned(struct wl_proxy *proxy,
 	}
 
 	if (debug_client)
-		wl_closure_print(closure, &proxy->object, true);
+		wl_closure_print(closure, &proxy->object, true, false);
 
 	if (wl_closure_send(closure, proxy->display->connection)) {
 		wl_log("Error sending request: %s\n", strerror(errno));
@@ -1358,6 +1358,9 @@ queue_event(struct wl_display *display, int len)
 	struct wl_closure *closure;
 	const struct wl_message *message;
 	struct wl_event_queue *queue;
+	struct timespec tp;
+	unsigned int time;
+	int num_zombie_fds;
 
 	wl_connection_copy(display->connection, p, sizeof p);
 	id = p[0];
@@ -1371,10 +1374,23 @@ queue_event(struct wl_display *display, int len)
 	proxy = wl_map_lookup(&display->objects, id);
 	if (!proxy || wl_object_is_zombie(&display->objects, id)) {
 		struct wl_zombie *zombie = wl_map_lookup(&display->objects, id);
+		num_zombie_fds = (zombie && opcode < zombie->event_count) ?
+			zombie->fd_count[opcode] : 0;
 
-		if (zombie && zombie->fd_count[opcode])
+		if (debug_client) {
+			clock_gettime(CLOCK_REALTIME, &tp);
+			time = (tp.tv_sec * 1000000L) + (tp.tv_nsec / 1000);
+
+			fprintf(stderr, "[%10.3f] discarded [%s]@%d.[event %d]"
+				"(%d fd, %d byte)\n",
+				time / 1000.0,
+				zombie ? "zombie" : "unknown",
+				id, opcode,
+				num_zombie_fds, size);
+		}
+		if (num_zombie_fds > 0)
 			wl_connection_close_fds_in(display->connection,
-						   zombie->fd_count[opcode]);
+						   num_zombie_fds);
 
 		wl_connection_consume(display->connection, size);
 		return size;
@@ -1433,6 +1449,8 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 	proxy = closure->proxy;
 	proxy_destroyed = !!(proxy->flags & WL_PROXY_FLAG_DESTROYED);
 	if (proxy_destroyed) {
+		if (debug_client)
+			wl_closure_print(closure, &proxy->object, false, true);
 		destroy_queued_closure(closure);
 		return;
 	}
@@ -1441,13 +1459,13 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 
 	if (proxy->dispatcher) {
 		if (debug_client)
-			wl_closure_print(closure, &proxy->object, false);
+			wl_closure_print(closure, &proxy->object, false, false);
 
 		wl_closure_dispatch(closure, proxy->dispatcher,
 				    &proxy->object, opcode);
 	} else if (proxy->object.implementation) {
 		if (debug_client)
-			wl_closure_print(closure, &proxy->object, false);
+			wl_closure_print(closure, &proxy->object, false, false);
 
 		wl_closure_invoke(closure, WL_CLOSURE_INVOKE_CLIENT,
 				  &proxy->object, opcode, proxy->user_data);

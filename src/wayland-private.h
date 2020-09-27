@@ -211,7 +211,7 @@ wl_closure_queue(struct wl_closure *closure, struct wl_connection *connection);
 
 void
 wl_closure_print(struct wl_closure *closure,
-		 struct wl_object *target, int send);
+		 struct wl_object *target, int send, int discarded);
 
 void
 wl_closure_destroy(struct wl_closure *closure);
