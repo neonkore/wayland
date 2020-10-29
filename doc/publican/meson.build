@@ -9,6 +9,7 @@ custom_target(
 		'--skip-validation',
 		'--stringparam', 'chunk.section.depth=0',
 		'--stringparam', 'toc.section.depth=1',
+		'--stringparam', 'generate.consistent.ids=1',
 		'--stringparam', 'html.stylesheet=css/default.css',
 		'-o', '@OUTPUT@',
 		'html',
