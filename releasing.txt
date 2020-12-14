@@ -3,16 +3,16 @@ To make a release of Wayland, follow these steps.
   0.  Verify the test suites and codebase checks pass.  All of the
       tests should either pass or skip.
 
-      $ make check
+      $ ninja -C build/ test
 
-  1.  Update the first stanza of configure.ac to the intended version.
+  1.  Update the first stanza of meson.build to the intended version.
 
       Then commit your changes:
 
       $ export RELEASE_NUMBER="x.y.z"
       $ export RELEASE_NAME="[alpha|beta|RC1|RC2|official|point]"
       $ git status
-      $ git commit configure.ac -m "configure.ac: bump to version $RELEASE_NUMBER for the $RELEASE_NAME release"
+      $ git commit meson.build -m "build: bump to version $RELEASE_NUMBER for the $RELEASE_NAME release"
       $ git push
 
   2.  Run the release.sh script to generate the tarballs, sign and
@@ -69,9 +69,9 @@ development early).
     $ git branch x.y [sha]
     $ git push origin x.y
 
-The master branch's configure.ac version should always be (at least)
+The master branch's meson.build version should always be (at least)
 x.y.90, with x.y being the most recent stable branch.  The stable
-branch's configure.ac version is just whatever was most recently
+branch's meson.build version is just whatever was most recently
 released from that branch.
 
 For stable branches, we commit fixes to master first, then cherry-pick

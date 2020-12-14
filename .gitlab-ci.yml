@@ -14,13 +14,13 @@ stages:
 
 
 variables:
-  DEBIAN_PACKAGES: 'build-essential automake autoconf libtool pkg-config libexpat1-dev libffi-dev libxml2-dev doxygen graphviz xmlto xsltproc docbook-xsl python3-pip python3-setuptools ninja-build'
+  DEBIAN_PACKAGES: 'build-essential pkg-config libexpat1-dev libffi-dev libxml2-dev doxygen graphviz xmlto xsltproc docbook-xsl python3-pip python3-setuptools ninja-build'
   DEBIAN_EXEC: 'pip3 install meson==0.52.1'
   # these tags should be updated each time the list of packages is updated
   # changing these will force rebuilding the associated image
   # Note: these tags have no meaning and are not tied to a particular
   # wayland version
-  DEBIAN_TAG: '2020-06-05.1'
+  DEBIAN_TAG: '2020-12-14.0'
   FDO_UPSTREAM_REPO: wayland/wayland
 
 
@@ -41,34 +41,7 @@ debian:buster@container-prep:
     GIT_STRATEGY: none
 
 
-build-native-autotools:
-  extends:
-    - .debian.buster
-    - .fdo.distribution-image@debian
-  stage: build
-  script:
-  - export BUILD_ID="wayland-$CI_JOB_NAME_$CI_COMMIT_SHA-$CI_JOB_ID"
-  - export PREFIX="$(pwd)/prefix-$BUILD_ID"
-  - export BUILDDIR="$(pwd)/build-$BUILD_ID"
-  - export MAKEFLAGS="-j4"
-  - mkdir "$BUILDDIR" "$PREFIX"
-  - cd "$BUILDDIR"
-  - ../autogen.sh --prefix="$PREFIX" --with-icondir=/usr/share/X11/icons
-  - make all
-  - make check
-  - make install
-  - make distcheck
-  artifacts:
-    name: wayland-$CI_COMMIT_SHA-$CI_JOB_ID
-    when: always
-    paths:
-    - build-*/wayland-*.tar.xz
-    - build-*/wayland*/_build/sub/*.log
-    - build-*/*.log
-    - prefix-*
-
-
-build-native-meson:
+build-native:
   extends:
     - .debian.buster
     - .fdo.distribution-image@debian
