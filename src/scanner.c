@@ -41,9 +41,9 @@
 #if HAVE_LIBXML
 #include <libxml/parser.h>
 
-/* Embedded wayland.dtd file, see dtddata.S */
-extern char DTD_DATA_begin;
-extern int DTD_DATA_len;
+/* Embedded wayland.dtd file */
+/* static const char wayland_dtd[]; wayland.dtd */
+#include "wayland.dtd.h"
 #endif
 
 /* Expat must be included after libxml as both want to declare XMLCALL; see
@@ -112,8 +112,8 @@ is_dtd_valid(FILE *input, const char *filename)
 	if (!ctx || !dtdctx)
 		abort();
 
-	buffer = xmlParserInputBufferCreateMem(&DTD_DATA_begin,
-					       DTD_DATA_len,
+	buffer = xmlParserInputBufferCreateMem(wayland_dtd,
+					       sizeof(wayland_dtd),
 					       XML_CHAR_ENCODING_UTF8);
 	if (!buffer) {
 		fprintf(stderr, "Failed to init buffer for DTD.\n");

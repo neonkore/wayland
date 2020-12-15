@@ -34,13 +34,17 @@ if get_option('scanner')
 		scanner_args += '-DHAVE_LIBXML=1'
 	endif
 
-	configure_file(
+	prog_embed = find_program('embed.py', native: true)
+
+	embed_dtd = custom_target(
+		'wayland.dtd.h',
 		input: '../protocol/wayland.dtd',
-		output: 'wayland.dtd.embed',
-		copy: true
+		output: 'wayland.dtd.h',
+		command: [ prog_embed, '@INPUT@', 'wayland_dtd' ],
+		capture: true
 	)
 
-	wayland_scanner_sources = [ 'scanner.c', 'dtddata.S' ]
+	wayland_scanner_sources = [ 'scanner.c', embed_dtd ]
 	wayland_scanner_includes = [ root_inc, protocol_inc ]
 
 	wayland_scanner = executable(
