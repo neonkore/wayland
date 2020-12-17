@@ -145,7 +145,7 @@
       Xwayland. It is often nearly impossible to prove that synchronous or
       blocking X11 calls from XWM cannot cause a deadlock, and therefore it is
       strongly recommended to make all X11 communications asynchronous. All
-      Wayland communications are already asynchonous by design.
+      Wayland communications are already asynchronous by design.
     </para>
     <section id="sect-X11-Application-Support-xwm-window-identification">
       <title>Window identification</title>

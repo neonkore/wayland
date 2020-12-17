@@ -169,7 +169,7 @@
 	    <para>
 	      The 32-bit object ID.  Generally, the interface used for the new
 	      object is inferred from the xml, but in the case where it's not
-	      specified, a new_id is preceeded by a <code>string</code> specifying
+	      specified, a new_id is preceded by a <code>string</code> specifying
 	      the interface name, and a <code>uint</code> specifying the version.
 	    </para>
 	  </listitem>
@@ -214,7 +214,7 @@
 	<listitem>
 	  <para>
 	    The object creation hierarchy must be a tree.  Otherwise,
-	    infering object versions from the parent object becomes a much
+	    inferring object versions from the parent object becomes a much
 	    more difficult to properly track.
 	  </para>
 	</listitem>
@@ -293,7 +293,7 @@
       creating the object (either client or server).  IDs allocated by the
       client are in the range [1, 0xfeffffff] while IDs allocated by the
       server are in the range [0xff000000, 0xffffffff].  The 0 ID is
-      reserved to represent a null or non-existant object.
+      reserved to represent a null or non-existent object.
 
       For efficiency purposes, the IDs are densely packed in the sense that
       the ID N will not be used until N-1 has been used.  Any ID allocation
