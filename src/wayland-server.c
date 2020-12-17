@@ -689,12 +689,12 @@ wl_resource_post_no_memory(struct wl_resource *resource)
  * Before Wayland 1.2.0, the definition of struct wl_resource was public.
  * It was made opaque just before 1.2.0, and later new fields were added.
  * The new fields cannot be accessed if a program is using the deprecated
- * defition, as there would not be memory allocated for them.
+ * definition, as there would not be memory allocated for them.
  *
  * The creation pattern for the deprecated definition was wl_resource_init()
  * followed by wl_client_add_resource(). wl_resource_init() was an inline
  * function and no longer exists, but binaries might still carry it.
- * wl_client_add_resource() still exists for ABI compatiblity.
+ * wl_client_add_resource() still exists for ABI compatibility.
  */
 static bool
 resource_is_deprecated(struct wl_resource *resource)
@@ -891,7 +891,7 @@ wl_client_destroy(struct wl_client *client)
 
 /* Check if a global filter is registered and use it if any.
  *
- * If no wl_global filter has been registered, this funtion will
+ * If no wl_global filter has been registered, this function will
  * return true, allowing the wl_global to be visible to the wl_client
  */
 static bool
@@ -1151,13 +1151,13 @@ wl_display_destroy(struct wl_display *display)
 /** Set a filter function for global objects
  *
  * \param display The Wayland display object.
- * \param filter  The global filter funtion.
+ * \param filter  The global filter function.
  * \param data User data to be associated with the global filter.
  * \return None.
  *
  * Set a filter for the wl_display to advertise or hide global objects
  * to clients.
- * The set filter will be used during wl_global advertisment to
+ * The set filter will be used during wl_global advertisement to
  * determine whether a global object should be advertised to a
  * given client, and during wl_global binding to determine whether
  * a given client should be allowed to bind to a global.
@@ -2035,7 +2035,7 @@ wl_client_for_each_resource(struct wl_client *client,
  * without corrupting the signal's list.
  *
  * Before passing a wl_priv_signal object to any other function it must be
- * initialized by useing wl_priv_signal_init().
+ * initialized by using wl_priv_signal_init().
  *
  * \memberof wl_priv_signal
  */
@@ -2065,7 +2065,7 @@ wl_priv_signal_add(struct wl_priv_signal *signal, struct wl_listener *listener)
  *
  * Returns the listener added to the given \a signal and with the given
  * \a notify function, or NULL if there isn't any.
- * Calling this function from withing wl_priv_signal_emit() is safe and will
+ * Calling this function from within wl_priv_signal_emit() is safe and will
  * return the correct value.
  *
  * \memberof wl_priv_signal
