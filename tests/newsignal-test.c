@@ -223,7 +223,7 @@ TEST(signal_readd_listener)
 {
 	/* Readding a listener is supported, that is it doesn't trigger an
 	 * infinite loop or other weird things, but if in a listener you
-	 * readd another listener, that will not be fired in the current
+	 * re-add another listener, that will not be fired in the current
 	 * signal emission. */
 
 	test_set_timeout(4);
