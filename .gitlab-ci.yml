@@ -74,10 +74,10 @@ stages:
     BUILD_OS: debian
     FDO_DISTRIBUTION_VERSION: buster
     FDO_DISTRIBUTION_PACKAGES: 'build-essential pkg-config libexpat1-dev libffi-dev libxml2-dev doxygen graphviz xmlto xsltproc docbook-xsl python3-pip python3-setuptools ninja-build'
-    FDO_DISTRIBUTION_EXEC: 'pip3 install meson==0.52.1'
+    FDO_DISTRIBUTION_EXEC: 'pip3 install meson==0.56.0'
     # bump this tag every time you change something which requires rebuilding the
     # base image
-    FDO_DISTRIBUTION_TAG: "2021-08-03.0"
+    FDO_DISTRIBUTION_TAG: "2022-02-05.0"
 
 .debian-x86_64:
   extends:
