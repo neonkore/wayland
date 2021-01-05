@@ -13,7 +13,7 @@ dot_map = []
 
 doxygen_conf = configuration_data()
 doxygen_conf.set('VERSION', meson.project_version())
-doxygen_conf.set('top_builddir', meson.build_root())
+doxygen_conf.set('top_builddir', meson.project_build_root())
 wayland_doxygen = configure_file(
 	input: 'wayland.doxygen.in',
 	output: 'wayland.doxygen',
