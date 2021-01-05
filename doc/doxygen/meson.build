@@ -76,6 +76,7 @@ foreach f_name, sections: formats
 		# We do not really need an output file, but Meson
 		# will complain if one is not set, so we use a
 		# dummy 'stamp' file
+		stamp = join_paths(meson.current_build_dir(), '@0@.stamp'.format(t_name))
 		custom_target(
 			t_name,
 			command: [
@@ -84,7 +85,7 @@ foreach f_name, sections: formats
 				'--builddir=@OUTDIR@',
 				'--section=@0@'.format(s_name),
 				'--output-format=@0@'.format(f_name),
-				'--stamp=doc/doxygen/@0@.stamp'.format(t_name),
+				'--stamp=@0@'.format(stamp),
 				wayland_doxygen,
 				'@INPUT@',
 			],
@@ -97,13 +98,14 @@ foreach f_name, sections: formats
 endforeach
 
 man_files = shared_files + server_files + client_files + cursor_files
+stamp = join_paths(meson.current_build_dir(), 'man3.stamp')
 custom_target(
 	'man-pages-3',
 	command: [
 		gen_doxygen,
 		'--builddir=@OUTDIR@',
 		'--output-format=man3',
-		'--stamp=doc/doxygen/man3.stamp',
+		'--stamp=@0@'.format(stamp),
 		wayland_doxygen,
 		'@INPUT@',
 	],
