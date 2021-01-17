@@ -1275,8 +1275,8 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target,
 	clock_gettime(CLOCK_REALTIME, &tp);
 	time = (tp.tv_sec * 1000000L) + (tp.tv_nsec / 1000);
 
-	fprintf(stderr, "[%10.3f] %s%s%s@%u.%s(",
-		time / 1000.0,
+	fprintf(stderr, "[%7u.%03u] %s%s%s@%u.%s(",
+		time / 1000, time % 1000,
 		discarded ? "discarded " : "",
 		send ? " -> " : "",
 		target->interface->name, target->id,
@@ -1295,8 +1295,17 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target,
 			fprintf(stderr, "%d", closure->args[i].i);
 			break;
 		case 'f':
-			fprintf(stderr, "%f",
-				wl_fixed_to_double(closure->args[i].f));
+			/* The magic number 390625 is 1e8 / 256 */
+			if (closure->args[i].f >= 0) {
+				fprintf(stderr, "%d.%08d",
+					closure->args[i].f / 256,
+					390625 * (closure->args[i].f % 256));
+			} else {
+
+				fprintf(stderr, "-%d.%08d",
+					closure->args[i].f / -256,
+					-390625 * (closure->args[i].f % 256));
+			}
 			break;
 		case 's':
 			if (closure->args[i].s)
