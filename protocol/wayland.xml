@@ -399,6 +399,10 @@
       <entry name="p010" value="0x30313050" summary="2x2 subsampled Cr:Cb plane 10 bits per channel"/>
       <entry name="p012" value="0x32313050" summary="2x2 subsampled Cr:Cb plane 12 bits per channel"/>
       <entry name="p016" value="0x36313050" summary="2x2 subsampled Cr:Cb plane 16 bits per channel"/>
+      <entry name="axbxgxrx106106106106" value="0x30314241" summary="[63:0] A:x:B:x:G:x:R:x 10:6:10:6:10:6:10:6 little endian"/>
+      <entry name="nv15" value="0x3531564e" summary="2x2 subsampled Cr:Cb plane"/>
+      <entry name="q410" value="0x30313451"/>
+      <entry name="q401" value="0x31303451"/>
     </enum>
 
     <request name="create_pool">
