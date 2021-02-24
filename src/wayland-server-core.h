@@ -279,6 +279,9 @@ wl_display_set_global_filter(struct wl_display *display,
 const struct wl_interface *
 wl_global_get_interface(const struct wl_global *global);
 
+struct wl_display *
+wl_global_get_display(const struct wl_global *global);
+
 void *
 wl_global_get_user_data(const struct wl_global *global);
 

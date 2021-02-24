@@ -1277,6 +1277,20 @@ wl_global_get_interface(const struct wl_global *global)
 	return global->interface;
 }
 
+/** Get the display object for the given global
+ *
+ * \param global The global object
+ * \return The display object the global is associated with.
+ *
+ * \memberof wl_global
+ * \since 1.20
+ */
+WL_EXPORT struct wl_display *
+wl_global_get_display(const struct wl_global *global)
+{
+	return global->display;
+}
+
 WL_EXPORT void *
 wl_global_get_user_data(const struct wl_global *global)
 {
