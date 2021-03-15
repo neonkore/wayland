@@ -25,14 +25,19 @@
 
 #define _GNU_SOURCE
 
+#include "../config.h"
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/epoll.h>
+#include <sys/un.h>
+#ifdef HAVE_SYS_UCRED_H
+#include <sys/ucred.h>
+#endif
 
-#include "../config.h"
 #include "wayland-os.h"
 
 static int
@@ -71,6 +76,46 @@ wl_os_socket_cloexec(int domain, int type, int protocol)
 	fd = socket(domain, type, protocol);
 	return set_cloexec_or_close(fd);
 }
+
+#if defined(__FreeBSD__)
+int
+wl_os_socket_peercred(int sockfd, uid_t *uid, gid_t *gid, pid_t *pid)
+{
+	socklen_t len;
+	struct xucred ucred;
+
+	len = sizeof(ucred);
+	if (getsockopt(sockfd, SOL_LOCAL, LOCAL_PEERCRED, &ucred, &len) < 0 ||
+	    ucred.cr_version != XUCRED_VERSION)
+		return -1;
+	*uid = ucred.cr_uid;
+	*gid = ucred.cr_gid;
+#if HAVE_XUCRED_CR_PID
+	/* Since https://cgit.freebsd.org/src/commit/?id=c5afec6e895a */
+	*pid = ucred.cr_pid;
+#else
+	*pid = 0;
+#endif
+	return 0;
+}
+#elif defined(SO_PEERCRED)
+int
+wl_os_socket_peercred(int sockfd, uid_t *uid, gid_t *gid, pid_t *pid)
+{
+	socklen_t len;
+	struct ucred ucred;
+
+	len = sizeof(ucred);
+	if (getsockopt(sockfd, SOL_SOCKET, SO_PEERCRED, &ucred, &len) < 0)
+		return -1;
+	*uid = ucred.uid;
+	*gid = ucred.gid;
+	*pid = ucred.pid;
+	return 0;
+}
+#else
+#error "Don't know how to read ucred on this platform"
+#endif
 
 int
 wl_os_dupfd_cloexec(int fd, int minfd)

@@ -78,7 +78,9 @@ struct wl_client {
 	struct wl_list link;
 	struct wl_map objects;
 	struct wl_priv_signal destroy_signal;
-	struct ucred ucred;
+	pid_t pid;
+	uid_t uid;
+	gid_t gid;
 	int error;
 	struct wl_priv_signal resource_created_signal;
 };
@@ -314,7 +316,7 @@ wl_resource_post_error(struct wl_resource *resource,
 static void
 destroy_client_with_error(struct wl_client *client, const char *reason)
 {
-	wl_log("%s (pid %u)\n", reason, client->ucred.pid);
+	wl_log("%s (pid %u)\n", reason, client->pid);
 	wl_client_destroy(client);
 }
 
@@ -513,7 +515,6 @@ WL_EXPORT struct wl_client *
 wl_client_create(struct wl_display *display, int fd)
 {
 	struct wl_client *client;
-	socklen_t len;
 
 	client = zalloc(sizeof *client);
 	if (client == NULL)
@@ -528,9 +529,8 @@ wl_client_create(struct wl_display *display, int fd)
 	if (!client->source)
 		goto err_client;
 
-	len = sizeof client->ucred;
-	if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED,
-		       &client->ucred, &len) < 0)
+	if (wl_os_socket_peercred(fd, &client->uid, &client->gid,
+				  &client->pid) != 0)
 		goto err_source;
 
 	client->connection = wl_connection_create(fd);
@@ -586,11 +586,11 @@ wl_client_get_credentials(struct wl_client *client,
 			  pid_t *pid, uid_t *uid, gid_t *gid)
 {
 	if (pid)
-		*pid = client->ucred.pid;
+		*pid = client->pid;
 	if (uid)
-		*uid = client->ucred.uid;
+		*uid = client->uid;
 	if (gid)
-		*gid = client->ucred.gid;
+		*gid = client->gid;
 }
 
 /** Get the file descriptor for the client

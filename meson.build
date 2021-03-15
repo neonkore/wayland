@@ -26,7 +26,7 @@ add_project_arguments(
 	language: 'c'
 )
 
-foreach h: [ 'sys/prctl.h' ]
+foreach h: [ 'sys/prctl.h', 'sys/ucred.h' ]
 	config_h.set('HAVE_' + h.underscorify().to_upper(), cc.has_header(h))
 endforeach
 
@@ -41,6 +41,7 @@ have_funcs = [
 foreach f: have_funcs
 	config_h.set('HAVE_' + f.underscorify().to_upper(), cc.has_function(f))
 endforeach
+config_h.set10('HAVE_XUCRED_CR_PID', cc.has_member('struct xucred', 'cr_pid', prefix : '#include <sys/ucred.h>'))
 
 if get_option('libraries')
 	if host_machine.system() == 'freebsd'

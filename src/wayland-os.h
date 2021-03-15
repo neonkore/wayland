@@ -26,8 +26,14 @@
 #ifndef WAYLAND_OS_H
 #define WAYLAND_OS_H
 
+#include <sys/types.h>
+#include <sys/socket.h>
+
 int
 wl_os_socket_cloexec(int domain, int type, int protocol);
+
+int
+wl_os_socket_peercred(int sockfd, uid_t *uid, gid_t *gid, pid_t *pid);
 
 int
 wl_os_dupfd_cloexec(int fd, int minfd);
