@@ -22,6 +22,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#include "../config.h"
 
 #define _GNU_SOURCE
 
@@ -36,10 +37,15 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <limits.h>
+#include <signal.h>
 #include <sys/ptrace.h>
+#ifdef HAVE_SYS_PROCCTL_H
+#include <sys/procctl.h>
+#elif defined(HAVE_SYS_PRCTL_H)
 #include <sys/prctl.h>
 #ifndef PR_SET_PTRACER
 # define PR_SET_PTRACER 0x59616d61
+#endif
 #endif
 
 #include "test-runner.h"
@@ -226,6 +232,21 @@ stderr_reset_color(void)
  * Returns: 1 if a debugger is confirmed present; 0 if no debugger is
  * present or if it can't be determined.
  */
+#if defined(HAVE_SYS_PROCCTL_H) && defined(PROC_TRACE_STATUS)
+static int
+is_debugger_attached(void)
+{
+	int rc;
+	int status;
+	rc = procctl(P_PID, getpid(), PROC_TRACE_STATUS, &status);
+	if (rc == -1) {
+		perror("procctl");
+		return 0;
+	}
+	/* -1=tracing disabled, 0=no debugger attached, >0=pid of debugger. */
+	return status > 0;
+}
+#elif defined(HAVE_SYS_PRCTL_H)
 static int
 is_debugger_attached(void)
 {
@@ -287,6 +308,7 @@ is_debugger_attached(void)
 
 	return rc;
 }
+#endif
 
 int main(int argc, char *argv[])
 {

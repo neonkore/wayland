@@ -26,7 +26,7 @@ add_project_arguments(
 	language: 'c'
 )
 
-foreach h: [ 'sys/prctl.h', 'sys/ucred.h' ]
+foreach h: [ 'sys/prctl.h', 'sys/procctl.h', 'sys/ucred.h' ]
 	config_h.set('HAVE_' + h.underscorify().to_upper(), cc.has_header(h))
 endforeach
 
