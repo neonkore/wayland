@@ -43,6 +43,14 @@ foreach f: have_funcs
 endforeach
 
 if get_option('libraries')
+	if host_machine.system() == 'freebsd'
+		# When building for FreeBSD, epoll(7) is provided by a userspace
+		# wrapper around kqueue(2).
+		epoll_dep = dependency('epoll-shim')
+	else
+		# Otherwise, assume that epoll(7) is supported natively.
+		epoll_dep = []
+	endif
 	ffi_dep = dependency('libffi')
 
 	decls = [
@@ -52,7 +60,7 @@ if get_option('libraries')
 	]
 
 	foreach d: decls
-		if not cc.has_header_symbol(d['header'], d['symbol'])
+		if not cc.has_header_symbol(d['header'], d['symbol'], dependencies: epoll_dep)
 			error('@0@ is needed to compile Wayland libraries'.format(d['symbol']))
 		endif
 	endforeach

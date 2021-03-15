@@ -9,6 +9,7 @@ test_runner = static_library(
 	dependencies: [
 		cc.find_library('dl', required: false),
 		dependency('threads'),
+		epoll_dep,
 		ffi_dep,
 		wayland_util_dep,
 		wayland_private_dep,
@@ -154,7 +155,7 @@ tests = {
 
 foreach test_name, test_extra_sources: tests
 	test_sources = [ test_name + '.c' ] + test_extra_sources
-	test_deps = [test_runner_dep]
+	test_deps = [test_runner_dep, epoll_dep]
 	bin = executable(test_name, test_sources, dependencies: test_deps)
 	test(
 		test_name,

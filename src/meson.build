@@ -89,7 +89,7 @@ if get_option('libraries')
 			'connection.c',
 			'wayland-os.c'
 		],
-		dependencies: [ ffi_dep, rt_dep ]
+		dependencies: [ epoll_dep, ffi_dep, rt_dep ]
 	)
 
 	wayland_private_dep = declare_dependency(
@@ -163,6 +163,7 @@ if get_option('libraries')
 		],
 		version: '0.1.0',
 		dependencies: [
+			epoll_dep,
 			ffi_dep,
 			wayland_private_dep,
 			wayland_util_dep,
@@ -177,7 +178,7 @@ if get_option('libraries')
 	wayland_server_dep = declare_dependency(
 		link_with: wayland_server,
 		include_directories: [ root_inc, include_directories('.') ],
-		dependencies: [ ffi_dep, mathlib_dep, threads_dep ],
+		dependencies: [ epoll_dep, ffi_dep, mathlib_dep, threads_dep ],
 		sources: [
 			wayland_server_protocol_core_h,
 			wayland_server_protocol_h
@@ -206,6 +207,7 @@ if get_option('libraries')
 		],
 		version: '0.3.0',
 		dependencies: [
+			epoll_dep,
 			ffi_dep,
 			wayland_private_dep,
 			wayland_util_dep,
