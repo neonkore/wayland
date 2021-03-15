@@ -32,7 +32,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <string.h>
 #include <sys/epoll.h>
+#include <sys/mman.h>
 #include <sys/un.h>
 #ifdef HAVE_SYS_UCRED_H
 #include <sys/ucred.h>
@@ -209,4 +211,32 @@ wl_os_accept_cloexec(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 
 	fd = accept(sockfd, addr, addrlen);
 	return set_cloexec_or_close(fd);
+}
+
+/*
+ * Fallback function for operating systems that don't implement
+ * mremap(MREMAP_MAYMOVE).
+ */
+void *
+wl_os_mremap_maymove(int fd, void *old_data, ssize_t *old_size,
+		     ssize_t new_size, int prot, int flags)
+{
+	void *result;
+	/*
+	 * We could try mapping a new block immediately after the current one
+	 * with MAP_FIXED, however that is not guaranteed to work and breaks
+	 * on CHERI-enabled architectures since the data pointer will still
+	 * have the bounds of the previous allocation. As this is not a
+	 * performance-critical path, we always map a new region and copy the
+	 * old data to the new region.
+	 */
+	result = mmap(NULL, new_size, prot, flags, fd, 0);
+	if (result != MAP_FAILED) {
+		/* Copy the data over and unmap the old mapping. */
+		memcpy(result, old_data, *old_size);
+		if (munmap(old_data, *old_size) == 0) {
+			*old_size = 0; /* successfully unmapped old data. */
+		}
+	}
+	return result;
 }

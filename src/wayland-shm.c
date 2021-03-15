@@ -45,6 +45,7 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#include "wayland-os.h"
 #include "wayland-util.h"
 #include "wayland-private.h"
 #include "wayland-server.h"
@@ -61,8 +62,12 @@ struct wl_shm_pool {
 	int internal_refcount;
 	int external_refcount;
 	char *data;
-	int32_t size;
-	int32_t new_size;
+	ssize_t size;
+	ssize_t new_size;
+	/* The following three fields are needed for mremap() emulation. */
+	int mmap_fd;
+	int mmap_flags;
+	int mmap_prot;
 	bool sigbus_is_impossible;
 };
 
@@ -90,6 +95,26 @@ struct wl_shm_sigbus_data {
 	int fallback_mapping_used;
 };
 
+static void *
+shm_pool_grow_mapping(struct wl_shm_pool *pool)
+{
+	void *data;
+
+#ifdef MREMAP_MAYMOVE
+	data = mremap(pool->data, pool->size, pool->new_size, MREMAP_MAYMOVE);
+#else
+	data = wl_os_mremap_maymove(pool->mmap_fd, pool->data, &pool->size,
+				    pool->new_size, pool->mmap_prot,
+				    pool->mmap_flags);
+	if (pool->size != 0) {
+		wl_resource_post_error(pool->resource,
+				       WL_SHM_ERROR_INVALID_FD,
+				       "leaked old mapping");
+	}
+#endif
+	return data;
+}
+
 static void
 shm_pool_finish_resize(struct wl_shm_pool *pool)
 {
@@ -98,7 +123,7 @@ shm_pool_finish_resize(struct wl_shm_pool *pool)
 	if (pool->size == pool->new_size)
 		return;
 
-	data = mremap(pool->data, pool->size, pool->new_size, MREMAP_MAYMOVE);
+	data = shm_pool_grow_mapping(pool);
 	if (data == MAP_FAILED) {
 		wl_resource_post_error(pool->resource,
 				       WL_SHM_ERROR_INVALID_FD,
@@ -127,6 +152,7 @@ shm_pool_unref(struct wl_shm_pool *pool, bool external)
 		return;
 
 	munmap(pool->data, pool->size);
+	close(pool->mmap_fd);
 	free(pool);
 }
 
@@ -274,6 +300,8 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 {
 	struct wl_shm_pool *pool;
 	int seals;
+	int prot;
+	int flags;
 
 	if (size <= 0) {
 		wl_resource_post_error(resource,
@@ -301,17 +329,19 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 	pool->external_refcount = 0;
 	pool->size = size;
 	pool->new_size = size;
-	pool->data = mmap(NULL, size,
-			  PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	prot = PROT_READ | PROT_WRITE;
+	flags = MAP_SHARED;
+	pool->data = mmap(NULL, size, prot, flags, fd, 0);
 	if (pool->data == MAP_FAILED) {
-		wl_resource_post_error(resource,
-				       WL_SHM_ERROR_INVALID_FD,
+		wl_resource_post_error(resource, WL_SHM_ERROR_INVALID_FD,
 				       "failed mmap fd %d: %s", fd,
 				       strerror(errno));
 		goto err_free;
 	}
-	close(fd);
-
+	/* We may need to keep the fd, prot and flags to emulate mremap(). */
+	pool->mmap_fd = fd;
+	pool->mmap_prot = prot;
+	pool->mmap_flags = flags;
 	pool->resource =
 		wl_resource_create(client, &wl_shm_pool_interface, 1, id);
 	if (!pool->resource) {

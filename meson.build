@@ -36,6 +36,7 @@ have_funcs = [
 	'posix_fallocate',
 	'prctl',
 	'memfd_create',
+	'mremap',
 	'strndup',
 ]
 foreach f: have_funcs
