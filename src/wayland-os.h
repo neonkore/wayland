@@ -30,7 +30,7 @@ int
 wl_os_socket_cloexec(int domain, int type, int protocol);
 
 int
-wl_os_dupfd_cloexec(int fd, long minfd);
+wl_os_dupfd_cloexec(int fd, int minfd);
 
 ssize_t
 wl_os_recvmsg_cloexec(int sockfd, struct msghdr *msg, int flags);

@@ -73,7 +73,7 @@ wl_os_socket_cloexec(int domain, int type, int protocol)
 }
 
 int
-wl_os_dupfd_cloexec(int fd, long minfd)
+wl_os_dupfd_cloexec(int fd, int minfd)
 {
 	int newfd;
 
