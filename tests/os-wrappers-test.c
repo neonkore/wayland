@@ -85,7 +85,8 @@ __attribute__ ((visibility("default"))) int
 fcntl(int fd, int cmd, ...)
 {
 	va_list ap;
-	void *arg;
+	int arg;
+	int has_arg;
 
 	wrapped_calls_fcntl++;
 
@@ -93,12 +94,27 @@ fcntl(int fd, int cmd, ...)
 		errno = EINVAL;
 		return -1;
 	}
+	switch (cmd) {
+	case F_DUPFD_CLOEXEC:
+	case F_DUPFD:
+	case F_SETFD:
+		va_start(ap, cmd);
+		arg = va_arg(ap, int);
+		has_arg = 1;
+		va_end(ap);
+		break;
+	case F_GETFD:
+		has_arg = 0;
+		break;
+	default:
+		fprintf(stderr, "Unexpected fctnl cmd %d\n", cmd);
+		abort();
+	}
 
-	va_start(ap, cmd);
-	arg = va_arg(ap, void*);
-	va_end(ap);
-
-	return real_fcntl(fd, cmd, arg);
+	if (has_arg) {
+		return real_fcntl(fd, cmd, arg);
+	}
+	return real_fcntl(fd, cmd);
 }
 
 __attribute__ ((visibility("default"))) ssize_t
