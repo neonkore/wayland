@@ -48,8 +48,12 @@ count_open_fds(void)
 	struct dirent *ent;
 	int count = 0;
 
-	dir = opendir("/proc/self/fd");
-	assert(dir && "opening /proc/self/fd failed.");
+	/*
+	 * Using /dev/fd instead of /proc/self/fd should allow this code to
+	 * work on non-Linux operating systems.
+	 */
+	dir = opendir("/dev/fd");
+	assert(dir && "opening /dev/fd failed.");
 
 	errno = 0;
 	while ((ent = readdir(dir))) {
@@ -58,7 +62,7 @@ count_open_fds(void)
 			continue;
 		count++;
 	}
-	assert(errno == 0 && "reading /proc/self/fd failed.");
+	assert(errno == 0 && "reading /dev/fd failed.");
 
 	closedir(dir);
 
