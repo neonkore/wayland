@@ -511,10 +511,8 @@ sigbus_handler(int signum, siginfo_t *info, void *context)
 	sigbus_data->fallback_mapping_used = 1;
 
 	/* This should replace the previous mapping */
-	if (mmap(pool->data, pool->size,
-		 PROT_READ | PROT_WRITE,
-		 MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS,
-		 0, 0) == (void *) -1) {
+	if (mmap(pool->data, pool->size, PROT_READ | PROT_WRITE,
+		 MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS, 0, 0) == MAP_FAILED) {
 		reraise_sigbus();
 		return;
 	}
