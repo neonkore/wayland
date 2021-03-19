@@ -43,6 +43,22 @@ foreach f: have_funcs
 	config_h.set('HAVE_' + f.underscorify().to_upper(), cc.has_function(f))
 endforeach
 config_h.set10('HAVE_XUCRED_CR_PID', cc.has_member('struct xucred', 'cr_pid', prefix : '#include <sys/ucred.h>'))
+have_broken_msg_cmsg_cloexec = false
+if host_machine.system() == 'freebsd'
+	have_broken_msg_cmsg_cloexec = not cc.compiles('''
+#include <sys/param.h> /* To get __FreeBSD_version. */
+#if __FreeBSD_version < 1300502 || \
+    (__FreeBSD_version >= 1400000 && __FreeBSD_version < 1400006)
+/*
+ * FreeBSD had a broken implementation of MSG_CMSG_CLOEXEC between 2015 and
+ * 2021. Check if we are compiling against a version that includes the fix
+ * (https://cgit.freebsd.org/src/commit/?id=6ceacebdf52211).
+ */
+#error "Broken MSG_CMSG_CLOEXEC"
+#endif
+''', name : 'MSG_CMSG_CLOEXEC works correctly')
+endif
+config_h.set10('HAVE_BROKEN_MSG_CMSG_CLOEXEC', have_broken_msg_cmsg_cloexec)
 
 if get_option('libraries')
 	if host_machine.system() == 'freebsd'
