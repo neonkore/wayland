@@ -187,7 +187,7 @@
     </event>
   </interface>
 
-  <interface name="wl_compositor" version="4">
+  <interface name="wl_compositor" version="5">
     <description summary="the compositor singleton">
       A compositor.  This object is a singleton global.  The
       compositor is in charge of combining the contents of multiple
@@ -1337,7 +1337,7 @@
     </event>
   </interface>
 
-  <interface name="wl_surface" version="4">
+  <interface name="wl_surface" version="5">
     <description summary="an onscreen surface">
       A surface is a rectangular area that may be displayed on zero
       or more outputs, and shown any number of times at the compositor's
@@ -1389,6 +1389,7 @@
       <entry name="invalid_scale" value="0" summary="buffer scale value is invalid"/>
       <entry name="invalid_transform" value="1" summary="buffer transform value is invalid"/>
       <entry name="invalid_size" value="2" summary="buffer size is invalid"/>
+      <entry name="invalid_offset" value="3" summary="buffer offset is invalid"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -1411,7 +1412,14 @@
 	buffer's upper left corner, relative to the current buffer's upper
 	left corner, in surface-local coordinates. In other words, the
 	x and y, combined with the new surface size define in which
-	directions the surface's size changes.
+	directions the surface's size changes. Setting anything other than 0
+	as x and y arguments is discouraged, and should instead be replaced
+	with using the separate wl_surface.offset request.
+
+	When the bound wl_surface version is 5 or higher, passing any
+	non-zero x or y is a protocol violation, and will result in an
+	'invalid_offset' error being raised. To achieve equivalent semantics,
+	use wl_surface.offset.
 
 	Surface contents are double-buffered state, see wl_surface.commit.
 
@@ -1741,6 +1749,27 @@
       <arg name="y" type="int" summary="buffer-local y coordinate"/>
       <arg name="width" type="int" summary="width of damage rectangle"/>
       <arg name="height" type="int" summary="height of damage rectangle"/>
+    </request>
+
+    <!-- Version 5 additions -->
+
+    <request name="offset" since="5">
+      <description summary="set the surface contents offset">
+	The x and y arguments specify the location of the new pending
+	buffer's upper left corner, relative to the current buffer's upper
+	left corner, in surface-local coordinates. In other words, the
+	x and y, combined with the new surface size define in which
+	directions the surface's size changes.
+
+	Surface location offset is double-buffered state, see
+	wl_surface.commit.
+
+	This request is semantically equivalent to and the replaces the x and y
+	arguments in the wl_surface.attach request in wl_surface versions prior
+	to 5. See wl_surface.attach for details.
+      </description>
+      <arg name="x" type="int" summary="surface-local x coordinate"/>
+      <arg name="y" type="int" summary="surface-local y coordinate"/>
     </request>
    </interface>
 
