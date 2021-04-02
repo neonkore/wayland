@@ -26,6 +26,14 @@ wayland_util_dep = declare_dependency(
 if get_option('scanner')
 	# wayland-scanner
 
+	scanner_deps = [ dependency('expat') ]
+	scanner_args = [ '-include', 'config.h' ]
+
+	if get_option('dtd_validation')
+		scanner_deps += dependency('libxml-2.0')
+		scanner_args += '-DHAVE_LIBXML=1'
+	endif
+
 	configure_file(
 		input: '../protocol/wayland.dtd',
 		output: 'wayland.dtd.embed',
@@ -38,7 +46,7 @@ if get_option('scanner')
 	wayland_scanner = executable(
 		'wayland-scanner',
 		wayland_scanner_sources,
-		c_args: [ '-include', 'config.h' ],
+		c_args: scanner_args,
 		include_directories: wayland_scanner_includes,
 		dependencies: [ scanner_deps, wayland_util_dep, ],
 		install: true

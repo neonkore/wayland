@@ -66,13 +66,6 @@ if get_option('libraries')
 	endif
 endif
 
-scanner_deps = [ dependency('expat') ]
-
-if get_option('dtd_validation')
-	scanner_deps += dependency('libxml-2.0')
-	config_h.set('HAVE_LIBXML', 1)
-endif
-
 configure_file(
 	output: 'config.h',
 	configuration: config_h,
