@@ -64,15 +64,17 @@ executable(
 	dependencies: test_runner_dep
 )
 
-test(
-	'cpp-compile-test',
-	executable(
+if add_languages('cpp')
+	test(
 		'cpp-compile-test',
-		'cpp-compile-test.cpp',
-		wayland_server_protocol_h,
-		include_directories: src_inc
+		executable(
+			'cpp-compile-test',
+			'cpp-compile-test.cpp',
+			wayland_server_protocol_h,
+			include_directories: src_inc
+		)
 	)
-)
+endif
 
 sed_path = find_program('sed').path()
 
