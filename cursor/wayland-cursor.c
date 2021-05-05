@@ -405,6 +405,9 @@ wl_cursor_theme_load(const char *name, int size, struct wl_shm *shm)
 	xcursor_load_theme(name, size, load_callback, theme);
 
 	if (theme->cursor_count == 0)
+		xcursor_load_theme(NULL, size, load_callback, theme);
+
+	if (theme->cursor_count == 0)
 		load_default_theme(theme);
 
 	return theme;
