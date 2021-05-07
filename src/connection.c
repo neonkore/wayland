@@ -1049,7 +1049,7 @@ copy_fds_to_connection(struct wl_closure *closure,
 		fd = closure->args[i].h;
 		if (wl_connection_put_fd(connection, fd)) {
 			wl_log("request could not be marshaled: "
-			       "can't send file descriptor");
+			       "can't send file descriptor\n");
 			return -1;
 		}
 		closure->args[i].h = -1;
