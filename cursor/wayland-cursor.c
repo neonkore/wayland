@@ -475,7 +475,7 @@ wl_cursor_frame_and_duration(struct wl_cursor *_cursor, uint32_t time,
 	uint32_t t;
 	int i;
 
-	if (cursor->cursor.image_count == 1) {
+	if (cursor->cursor.image_count == 1 || cursor->total_delay == 0) {
 		if (duration)
 			*duration = 0;
 		return 0;
