@@ -70,7 +70,7 @@ build-native:
   - export BUILDDIR="$(pwd)/build-$BUILD_ID"
   - mkdir "$BUILDDIR" "$PREFIX"
   - cd "$BUILDDIR"
-  - meson --prefix="$PREFIX" -Dicon_directory=/usr/share/X11/icons ..
+  - meson --prefix="$PREFIX" -Db_sanitize=address,undefined -Dicon_directory=/usr/share/X11/icons ..
   - ninja -k0 test
   - ninja clean
   artifacts:
