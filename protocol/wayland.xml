@@ -431,10 +431,11 @@
   <interface name="wl_buffer" version="1">
     <description summary="content for a wl_surface">
       A buffer provides the content for a wl_surface. Buffers are
-      created through factory interfaces such as wl_drm, wl_shm or
-      similar. It has a width and a height and can be attached to a
-      wl_surface, but the mechanism by which a client provides and
-      updates the contents is defined by the buffer factory interface.
+      created through factory interfaces such as wl_shm, wp_linux_buffer_params
+      (from the linux-dmabuf protocol extension) or similar. It has a width and
+      a height and can be attached to a wl_surface, but the mechanism by which a
+      client provides and updates the contents is defined by the buffer factory
+      interface.
     </description>
 
     <request name="destroy" type="destructor">
