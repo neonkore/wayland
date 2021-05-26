@@ -1435,9 +1435,12 @@
 	from the same backing storage or use wp_linux_buffer_release.
 
 	Destroying the wl_buffer after wl_buffer.release does not change
-	the surface contents. However, if the client destroys the
-	wl_buffer before receiving the wl_buffer.release event, the surface
-	contents become undefined immediately.
+	the surface contents. Destroying the wl_buffer before wl_buffer.release
+	is allowed as long as the underlying buffer storage isn't re-used (this
+	can happen e.g. on client process termination). However, if the client
+	destroys the wl_buffer before receiving the wl_buffer.release event and
+	mutates the underlying buffer storage, the surface contents become
+	undefined immediately.
 
 	If wl_surface.attach is sent with a NULL wl_buffer, the
 	following wl_surface.commit will remove the surface content.
