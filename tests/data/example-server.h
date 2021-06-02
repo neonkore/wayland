@@ -3304,16 +3304,6 @@ enum wl_pointer_axis {
  * from a "finger" source may be in a smooth coordinate space with
  * kinetic scrolling whereas a "wheel" source may be in discrete steps
  * of a number of lines.
- *
- * The "continuous" axis source is a device generating events in a
- * continuous coordinate space, but using something other than a
- * finger. One example for this source is button-based scrolling where
- * the vertical motion of a device is converted to scroll events while
- * a button is held down.
- *
- * The "wheel tilt" axis source indicates that the actual device is a
- * wheel but the scroll event is not caused by a rotation but a
- * (usually sideways) tilt of the wheel.
  */
 enum wl_pointer_axis_source {
 	/**
@@ -3326,10 +3316,20 @@ enum wl_pointer_axis_source {
 	WL_POINTER_AXIS_SOURCE_FINGER = 1,
 	/**
 	 * continuous coordinate space
+	 *
+	 * A device generating events in a continuous coordinate space,
+	 * but using something other than a finger. One example for this
+	 * source is button-based scrolling where the vertical motion of a
+	 * device is converted to scroll events while a button is held
+	 * down.
 	 */
 	WL_POINTER_AXIS_SOURCE_CONTINUOUS = 2,
 	/**
 	 * a physical wheel tilt
+	 *
+	 * Indicates that the actual device is a wheel but the scroll
+	 * event is not caused by a rotation but a (usually sideways) tilt
+	 * of the wheel.
 	 * @since 6
 	 */
 	WL_POINTER_AXIS_SOURCE_WHEEL_TILT = 3,
