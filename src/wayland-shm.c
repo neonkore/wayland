@@ -124,8 +124,7 @@ destroy_buffer(struct wl_resource *resource)
 {
 	struct wl_shm_buffer *buffer = wl_resource_get_user_data(resource);
 
-	if (buffer->pool)
-		shm_pool_unref(buffer->pool, false);
+	shm_pool_unref(buffer->pool, false);
 	free(buffer);
 }
 
@@ -400,11 +399,6 @@ wl_shm_buffer_get_stride(struct wl_shm_buffer *buffer)
 WL_EXPORT void *
 wl_shm_buffer_get_data(struct wl_shm_buffer *buffer)
 {
-	assert(buffer->pool);
-
-	if (!buffer->pool)
-		return NULL;
-
 	if (buffer->pool->external_refcount &&
 	    (buffer->pool->size != buffer->pool->new_size))
 		wl_log("Buffer address requested when its parent pool "
