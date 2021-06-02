@@ -236,6 +236,7 @@ struct entry {
 	char *summary;
 	int since;
 	struct wl_list link;
+	struct description *description;
 };
 
 struct parse_context {
@@ -245,6 +246,7 @@ struct parse_context {
 	struct interface *interface;
 	struct message *message;
 	struct enumeration *enumeration;
+	struct entry *entry;
 	struct description *description;
 	char character_data[8192];
 	unsigned int character_data_length;
@@ -542,6 +544,7 @@ free_entry(struct entry *entry)
 	free(entry->uppercase_name);
 	free(entry->value);
 	free(entry->summary);
+	free_description(entry->description);
 
 	free(entry);
 }
@@ -884,6 +887,7 @@ start_element(void *data, const char *element_name, const char **atts)
 			entry->summary = NULL;
 		wl_list_insert(ctx->enumeration->entry_list.prev,
 			       &entry->link);
+		ctx->entry = entry;
 	} else if (strcmp(element_name, "description") == 0) {
 		if (summary == NULL)
 			fail(&ctx->loc, "description without summary");
@@ -893,6 +897,8 @@ start_element(void *data, const char *element_name, const char **atts)
 
 		if (ctx->message)
 			ctx->message->description = description;
+		else if (ctx->entry)
+			ctx->entry->description = description;
 		else if (ctx->enumeration)
 			ctx->enumeration->description = description;
 		else if (ctx->interface)
@@ -1008,6 +1014,8 @@ end_element(void *data, const XML_Char *name)
 			     ctx->enumeration->name);
 		}
 		ctx->enumeration = NULL;
+	} else if (strcmp(name, "entry") == 0) {
+		ctx->entry = NULL;
 	} else if (strcmp(name, "protocol") == 0) {
 		struct interface *i;
 
@@ -1364,10 +1372,17 @@ emit_enumerations(struct interface *interface)
 		}
 		printf("enum %s_%s {\n", interface->name, e->name);
 		wl_list_for_each(entry, &e->entry_list, link) {
-			if (entry->summary || entry->since > 1) {
+			desc = entry->description;
+			if (entry->summary || entry->since > 1 || desc) {
 				printf("\t/**\n");
 				if (entry->summary)
 					printf("\t * %s\n", entry->summary);
+				if (desc) {
+					printf("\t * %s\n", desc->summary);
+					printf("\t *\n");
+					if (desc->text)
+						desc_dump(desc->text, "\t * ");
+				}
 				if (entry->since > 1)
 					printf("\t * @since %d\n", entry->since);
 				printf("\t */\n");
