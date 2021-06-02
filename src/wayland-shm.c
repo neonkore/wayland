@@ -106,13 +106,15 @@ shm_pool_unref(struct wl_shm_pool *pool, bool external)
 {
 	if (external) {
 		pool->external_refcount--;
+		assert(pool->external_refcount >= 0);
 		if (pool->external_refcount == 0)
 			shm_pool_finish_resize(pool);
 	} else {
 		pool->internal_refcount--;
+		assert(pool->internal_refcount >= 0);
 	}
 
-	if (pool->internal_refcount + pool->external_refcount)
+	if (pool->internal_refcount + pool->external_refcount > 0)
 		return;
 
 	munmap(pool->data, pool->size);
