@@ -100,7 +100,7 @@ socket(int domain, int type, int protocol)
 }
 
 __attribute__ ((visibility("default"))) int
-fcntl(int fd, int cmd, ...)
+(fcntl)(int fd, int cmd, ...)
 {
 	va_list ap;
 	int arg;
