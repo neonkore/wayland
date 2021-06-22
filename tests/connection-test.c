@@ -394,7 +394,7 @@ demarshal(struct marshal_data *data, const char *format,
 	struct wl_closure *closure;
 	struct wl_map objects;
 	struct wl_object object = { NULL, &func, 0 };
-	int size = msg[1];
+	int size = msg[1] >> 16;
 
 	assert(write(data->s[1], msg, size) == size);
 	assert(wl_connection_read(data->read_connection) == size);
@@ -417,39 +417,39 @@ TEST(connection_demarshal)
 
 	data.value.u = 8000;
 	msg[0] = 400200;	/* object id */
-	msg[1] = 12;		/* size = 12, opcode = 0 */
+	msg[1] = 12 << 16;		/* size = 12, opcode = 0 */
 	msg[2] = data.value.u;
 	demarshal(&data, "u", msg, (void *) validate_demarshal_u);
 
 	data.value.i = -557799;
 	msg[0] = 400200;
-	msg[1] = 12;
+	msg[1] = 12 << 16;
 	msg[2] = data.value.i;
 	demarshal(&data, "i", msg, (void *) validate_demarshal_i);
 
 	data.value.s = "superdude";
 	msg[0] = 400200;
-	msg[1] = 24;
+	msg[1] = 24 << 16;
 	msg[2] = 10;
 	memcpy(&msg[3], data.value.s, msg[2]);
 	demarshal(&data, "s", msg, (void *) validate_demarshal_s);
 
 	data.value.s = "superdude";
 	msg[0] = 400200;
-	msg[1] = 24;
+	msg[1] = 24 << 16;
 	msg[2] = 10;
 	memcpy(&msg[3], data.value.s, msg[2]);
 	demarshal(&data, "?s", msg, (void *) validate_demarshal_s);
 
 	data.value.i = wl_fixed_from_double(-90000.2390);
 	msg[0] = 400200;
-	msg[1] = 12;
+	msg[1] = 12 << 16;
 	msg[2] = data.value.i;
 	demarshal(&data, "f", msg, (void *) validate_demarshal_f);
 
 	data.value.s = NULL;
 	msg[0] = 400200;
-	msg[1] = 12;
+	msg[1] = 12 << 16;
 	msg[2] = 0;
 	demarshal(&data, "?s", msg, (void *) validate_demarshal_s);
 
