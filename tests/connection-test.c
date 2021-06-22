@@ -553,6 +553,24 @@ expected_fail_demarshal(struct marshal_data *data, const char *format,
 	assert(errno == expected_error);
 }
 
+TEST(connection_demarshal_null_strings)
+{
+	struct marshal_data data;
+	uint32_t msg[3];
+
+	setup_marshal_data(&data);
+
+	data.value.s = NULL;
+	msg[0] = 400200;	/* object id */
+	msg[1] = 12 << 16;	/* size = 12, opcode = 0 */
+	msg[2] = 0;		/* string length = 0 */
+	demarshal(&data, "?s", msg, (void *) validate_demarshal_s);
+
+	expected_fail_demarshal(&data, "s", msg, EINVAL);
+
+	release_marshal_data(&data);
+}
+
 /* These tests are verifying that the demarshaling code will gracefully handle
  * clients lying about string and array lengths and giving values near
  * UINT32_MAX. Before fixes f7fdface and f5b9e3b9 this test would crash on

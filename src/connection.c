@@ -749,6 +749,13 @@ wl_connection_demarshal(struct wl_connection *connection,
 		case 's':
 			length = *p++;
 
+			if (length == 0 && !arg.nullable) {
+				wl_log("NULL string received on non-nullable "
+				       "type, message %s(%s)\n", message->name,
+				       message->signature);
+				errno = EINVAL;
+				goto err;
+			}
 			if (length == 0) {
 				closure->args[i].s = NULL;
 				break;
