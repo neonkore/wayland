@@ -363,18 +363,21 @@ wl_map_lookup_flags(struct wl_map *map, uint32_t i)
 static enum wl_iterator_result
 for_each_helper(struct wl_array *entries, wl_iterator_func_t func, void *data)
 {
-	union map_entry *start, *end, *p;
 	enum wl_iterator_result ret = WL_ITERATOR_CONTINUE;
+	union map_entry entry, *start;
+	size_t count;
 
-	start = entries->data;
-	end = (union map_entry *) ((char *) entries->data + entries->size);
+	start = (union map_entry *) entries->data;
+	count = entries->size / sizeof(union map_entry);
 
-	for (p = start; p < end; p++)
-		if (p->data && !map_entry_is_free(*p)) {
-			ret = func(map_entry_get_data(*p), data, map_entry_get_flags(*p));
+	for (size_t idx = 0; idx < count; idx++) {
+		entry = start[idx];
+		if (entry.data && !map_entry_is_free(entry)) {
+			ret = func(map_entry_get_data(entry), data, map_entry_get_flags(entry));
 			if (ret != WL_ITERATOR_CONTINUE)
 				break;
 		}
+	}
 
 	return ret;
 }
