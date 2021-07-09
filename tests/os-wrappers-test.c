@@ -46,26 +46,44 @@
 
 static int fall_back;
 
-static int (*real_socket)(int, int, int);
-static int wrapped_calls_socket;
+/* Play nice with sanitizers
+ *
+ * Sanitizers need to intercept syscalls in the compiler run-time library. As
+ * this isn't a separate ELF object, the usual dlsym(RTLD_NEXT) approach won't
+ * work: there can only be one function named "socket" etc. To support this, the
+ * sanitizer library names its interceptors with the prefix __interceptor_ ("__"
+ * being reserved for the implementation) and then weakly aliases it to the real
+ * function. The functions we define below will override the weak alias, and we
+ * can call them by the __interceptor_ name directly. This allows the sanitizer
+ * to do its work before calling the next version of the function via dlsym.
+ *
+ * However! We also don't know which of these functions the sanitizer actually
+ * wants to override, so we have to declare our own weak symbols for
+ * __interceptor_ and check at run time if they linked to anything or not.
+*/
 
-static int (*real_fcntl)(int, int, ...);
-static int wrapped_calls_fcntl;
+#define DECL(ret_type, func, ...) \
+	ret_type __interceptor_ ## func(__VA_ARGS__) __attribute__((weak)); \
+	static ret_type (*real_ ## func)(__VA_ARGS__);			\
+	static int wrapped_calls_ ## func;
 
-static ssize_t (*real_recvmsg)(int, struct msghdr *, int);
-static int wrapped_calls_recvmsg;
+#define REAL(func) (__interceptor_ ## func) ?				\
+	__interceptor_ ## func :					\
+	(typeof(&__interceptor_ ## func))dlsym(RTLD_NEXT, #func)
 
-static int (*real_epoll_create1)(int);
-static int wrapped_calls_epoll_create1;
+DECL(int, socket, int, int, int);
+DECL(int, fcntl, int, int, ...);
+DECL(ssize_t, recvmsg, int, struct msghdr *, int);
+DECL(int, epoll_create1, int);
 
 static void
 init_fallbacks(int do_fallbacks)
 {
 	fall_back = do_fallbacks;
-	real_socket = dlsym(RTLD_NEXT, "socket");
-	real_fcntl = dlsym(RTLD_NEXT, "fcntl");
-	real_recvmsg = dlsym(RTLD_NEXT, "recvmsg");
-	real_epoll_create1 = dlsym(RTLD_NEXT, "epoll_create1");
+	real_socket = REAL(socket);
+	real_fcntl = REAL(fcntl);
+	real_recvmsg = REAL(recvmsg);
+	real_epoll_create1 = REAL(epoll_create1);
 }
 
 __attribute__ ((visibility("default"))) int
