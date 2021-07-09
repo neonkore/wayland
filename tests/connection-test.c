@@ -431,6 +431,7 @@ TEST(connection_demarshal)
 	msg[0] = 400200;
 	msg[1] = 24 << 16;
 	msg[2] = 10;
+	msg[3 + msg[2]/4] = 0;
 	memcpy(&msg[3], data.value.s, msg[2]);
 	demarshal(&data, "s", msg, (void *) validate_demarshal_s);
 
@@ -438,6 +439,7 @@ TEST(connection_demarshal)
 	msg[0] = 400200;
 	msg[1] = 24 << 16;
 	msg[2] = 10;
+	msg[3 + msg[2]/4] = 0;
 	memcpy(&msg[3], data.value.s, msg[2]);
 	demarshal(&data, "?s", msg, (void *) validate_demarshal_s);
 
