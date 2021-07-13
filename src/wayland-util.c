@@ -147,7 +147,9 @@ wl_array_copy(struct wl_array *array, struct wl_array *source)
 		array->size = source->size;
 	}
 
-	memcpy(array->data, source->data, source->size);
+	if (source->size > 0)
+		memcpy(array->data, source->data, source->size);
+
 	return 0;
 }
 
