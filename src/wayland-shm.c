@@ -66,6 +66,15 @@ struct wl_shm_pool {
 	bool sigbus_is_impossible;
 };
 
+/** \class wl_shm_buffer
+ *
+ * \brief A SHM buffer
+ *
+ * wl_shm_buffer provides a helper for accessing the contents of a wl_buffer
+ * resource created via the wl_shm interface.
+ *
+ * A wl_shm_buffer becomes invalid as soon as its #wl_resource is destroyed.
+ */
 struct wl_shm_buffer {
 	struct wl_resource *resource;
 	int32_t width, height;
