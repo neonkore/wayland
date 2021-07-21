@@ -738,11 +738,93 @@ wl_proxy_marshal_array_constructor_versioned(struct wl_proxy *proxy,
 					     const struct wl_interface *interface,
 					     uint32_t version)
 {
+	return wl_proxy_marshal_array_flags(proxy, opcode, interface, version, 0, args);
+}
+
+/** Prepare a request to be sent to the compositor
+ *
+ * \param proxy The proxy object
+ * \param opcode Opcode of the request to be sent
+ * \param interface The interface to use for the new proxy
+ * \param version The protocol object version of the new proxy
+ * \param flags Flags that modify marshalling behaviour
+ * \param ... Extra arguments for the given request
+ * \return A new wl_proxy for the new_id argument or NULL on error
+ *
+ * Translates the request given by opcode and the extra arguments into the
+ * wire format and write it to the connection buffer.
+ *
+ * For new-id arguments, this function will allocate a new wl_proxy
+ * and send the ID to the server.  The new wl_proxy will be returned
+ * on success or NULL on error with errno set accordingly.  The newly
+ * created proxy will have the version specified.
+ *
+ * The flag WL_MARSHAL_FLAG_DESTROY may be passed to ensure the proxy
+ * is destroyed atomically with the marshalling in order to prevent
+ * races that can occur if the display lock is dropped between the
+ * marshal and destroy operations.
+ *
+ * \note This should not normally be used by non-generated code.
+ *
+ * \memberof wl_proxy
+ */
+WL_EXPORT struct wl_proxy *
+wl_proxy_marshal_flags(struct wl_proxy *proxy, uint32_t opcode,
+		       const struct wl_interface *interface, uint32_t version,
+		       uint32_t flags, ...)
+{
+	union wl_argument args[WL_CLOSURE_MAX_ARGS];
+	va_list ap;
+
+	va_start(ap, flags);
+	wl_argument_from_va_list(proxy->object.interface->methods[opcode].signature,
+				 args, WL_CLOSURE_MAX_ARGS, ap);
+	va_end(ap);
+
+	return wl_proxy_marshal_array_flags(proxy, opcode, interface, version, flags, args);
+}
+
+/** Prepare a request to be sent to the compositor
+ *
+ * \param proxy The proxy object
+ * \param opcode Opcode of the request to be sent
+ * \param interface The interface to use for the new proxy
+ * \param version The protocol object version for the new proxy
+ * \param flags Flags that modify marshalling behaviour
+ * \param args Extra arguments for the given request
+ *
+ * Translates the request given by opcode and the extra arguments into the
+ * wire format and write it to the connection buffer.  This version takes an
+ * array of the union type wl_argument.
+ *
+ * For new-id arguments, this function will allocate a new wl_proxy
+ * and send the ID to the server.  The new wl_proxy will be returned
+ * on success or NULL on error with errno set accordingly.  The newly
+ * created proxy will have the version specified.
+ *
+ * The flag WL_MARSHAL_FLAG_DESTROY may be passed to ensure the proxy
+ * is destroyed atomically with the marshalling in order to prevent
+ * races that can occur if the display lock is dropped between the
+ * marshal and destroy operations.
+ *
+ * \note This is intended to be used by language bindings and not in
+ * non-generated code.
+ *
+ * \sa wl_proxy_marshal_flags()
+ *
+ * \memberof wl_proxy
+ */
+WL_EXPORT struct wl_proxy *
+wl_proxy_marshal_array_flags(struct wl_proxy *proxy, uint32_t opcode,
+			     const struct wl_interface *interface, uint32_t version,
+			     uint32_t flags, union wl_argument *args)
+{
 	struct wl_closure *closure;
 	struct wl_proxy *new_proxy = NULL;
 	const struct wl_message *message;
+	struct wl_display *disp = proxy->display;
 
-	pthread_mutex_lock(&proxy->display->mutex);
+	pthread_mutex_lock(&disp->mutex);
 
 	message = &proxy->object.interface->methods[opcode];
 	if (interface) {
@@ -775,7 +857,10 @@ wl_proxy_marshal_array_constructor_versioned(struct wl_proxy *proxy,
 	wl_closure_destroy(closure);
 
  err_unlock:
-	pthread_mutex_unlock(&proxy->display->mutex);
+	if (flags & WL_MARSHAL_FLAG_DESTROY)
+		wl_proxy_destroy_caller_locks(proxy);
+
+	pthread_mutex_unlock(&disp->mutex);
 
 	return new_proxy;
 }
