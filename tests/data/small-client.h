@@ -159,8 +159,8 @@ intf_A_rq1(struct intf_A *intf_A, const struct wl_interface *interface, uint32_t
 {
 	struct wl_proxy *untyped_new;
 
-	untyped_new = wl_proxy_marshal_constructor_versioned((struct wl_proxy *) intf_A,
-			 INTF_A_RQ1, interface, version, interface->name, version, NULL);
+	untyped_new = wl_proxy_marshal_flags((struct wl_proxy *) intf_A,
+			 INTF_A_RQ1, interface, version, 0, interface->name, version, NULL);
 
 	return (void *) untyped_new;
 }
@@ -173,8 +173,8 @@ intf_A_rq2(struct intf_A *intf_A, const char *str, int32_t i, uint32_t u, wl_fix
 {
 	struct wl_proxy *typed_new;
 
-	typed_new = wl_proxy_marshal_constructor((struct wl_proxy *) intf_A,
-			 INTF_A_RQ2, &intf_not_here_interface, NULL, str, i, u, f, fd, obj);
+	typed_new = wl_proxy_marshal_flags((struct wl_proxy *) intf_A,
+			 INTF_A_RQ2, &intf_not_here_interface, wl_proxy_get_version((struct wl_proxy *) intf_A), 0, NULL, str, i, u, f, fd, obj);
 
 	return (struct intf_not_here *) typed_new;
 }
@@ -185,10 +185,8 @@ intf_A_rq2(struct intf_A *intf_A, const char *str, int32_t i, uint32_t u, wl_fix
 static inline void
 intf_A_destroy(struct intf_A *intf_A)
 {
-	wl_proxy_marshal((struct wl_proxy *) intf_A,
-			 INTF_A_DESTROY);
-
-	wl_proxy_destroy((struct wl_proxy *) intf_A);
+	wl_proxy_marshal_flags((struct wl_proxy *) intf_A,
+			 INTF_A_DESTROY, NULL, wl_proxy_get_version((struct wl_proxy *) intf_A), WL_MARSHAL_FLAG_DESTROY);
 }
 
 #ifdef  __cplusplus

@@ -1238,37 +1238,39 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 
 		printf(")\n"
 		       "{\n");
-		if (ret && ret->interface_name == NULL) {
-			/* an arg has type ="new_id" but interface is not
-			 * provided, such as in wl_registry.bind */
-			printf("\tstruct wl_proxy *%s;\n\n"
-			       "\t%s = wl_proxy_marshal_constructor_versioned("
-			       "(struct wl_proxy *) %s,\n"
-			       "\t\t\t %s_%s, interface, version",
-			       ret->name, ret->name,
-			       interface->name,
-			       interface->uppercase_name,
-			       m->uppercase_name);
-		} else if (ret) {
-			/* Normal factory case, an arg has type="new_id" and
-			 * an interface is provided */
-			printf("\tstruct wl_proxy *%s;\n\n"
-			       "\t%s = wl_proxy_marshal_constructor("
-			       "(struct wl_proxy *) %s,\n"
-			       "\t\t\t %s_%s, &%s_interface",
-			       ret->name, ret->name,
-			       interface->name,
-			       interface->uppercase_name,
-			       m->uppercase_name,
-			       ret->interface_name);
+		printf("\t");
+		if (ret) {
+			printf("struct wl_proxy *%s;\n\n"
+			       "\t%s = ", ret->name, ret->name);
+		}
+		printf("wl_proxy_marshal_flags("
+		       "(struct wl_proxy *) %s,\n"
+		       "\t\t\t %s_%s",
+		       interface->name,
+		       interface->uppercase_name,
+		       m->uppercase_name);
+
+		if (ret) {
+			if (ret->interface_name) {
+				/* Normal factory case, an arg has type="new_id" and
+				 * an interface is provided */
+				printf(", &%s_interface", ret->interface_name);
+			} else {
+				/* an arg has type ="new_id" but interface is not
+				 * provided, such as in wl_registry.bind */
+				printf(", interface");
+			}
 		} else {
 			/* No args have type="new_id" */
-			printf("\twl_proxy_marshal((struct wl_proxy *) %s,\n"
-			       "\t\t\t %s_%s",
-			       interface->name,
-			       interface->uppercase_name,
-			       m->uppercase_name);
+			printf(", NULL");
 		}
+
+		if (ret && ret->interface_name == NULL)
+			printf(", version");
+		else
+			printf(", wl_proxy_get_version((struct wl_proxy *) %s)",
+			       interface->name);
+		printf(", %s", m->destructor ? "WL_MARSHAL_FLAG_DESTROY" : "0");
 
 		wl_list_for_each(a, &m->arg_list, link) {
 			if (a->type == NEW_ID) {
@@ -1280,11 +1282,6 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 			}
 		}
 		printf(");\n");
-
-		if (m->destructor)
-			printf("\n\twl_proxy_destroy("
-			       "(struct wl_proxy *) %s);\n",
-			       interface->name);
 
 		if (ret && ret->interface_name == NULL)
 			printf("\n\treturn (void *) %s;\n", ret->name);
