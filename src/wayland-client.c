@@ -514,11 +514,25 @@ proxy_destroy(struct wl_proxy *proxy)
 	wl_proxy_unref(proxy);
 }
 
+static void
+wl_proxy_destroy_caller_locks(struct wl_proxy *proxy)
+{
+	if (proxy->flags & WL_PROXY_FLAG_WRAPPER)
+		wl_abort("Tried to destroy wrapper with wl_proxy_destroy()\n");
+
+	proxy_destroy(proxy);
+}
+
 /** Destroy a proxy object
  *
  * \param proxy The proxy to be destroyed
  *
  * \c proxy must not be a proxy wrapper.
+ *
+ * \note This function will abort in response to egregious
+ * errors, and will do so with the display lock held. This means
+ * SIGABRT handlers must not perform any actions that would
+ * attempt to take that lock, or a deadlock would occur.
  *
  * \memberof wl_proxy
  */
@@ -527,11 +541,10 @@ wl_proxy_destroy(struct wl_proxy *proxy)
 {
 	struct wl_display *display = proxy->display;
 
-	if (proxy->flags & WL_PROXY_FLAG_WRAPPER)
-		wl_abort("Tried to destroy wrapper with wl_proxy_destroy()\n");
-
 	pthread_mutex_lock(&display->mutex);
-	proxy_destroy(proxy);
+
+	wl_proxy_destroy_caller_locks(proxy);
+
 	pthread_mutex_unlock(&display->mutex);
 }
 
