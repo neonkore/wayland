@@ -48,14 +48,12 @@ include:
     ref: *template_sha
     file:
       - '/templates/debian.yml'
+      - '/templates/freebsd.yml'
       - '/templates/ci-fairy.yml'
 
 variables:
   FDO_UPSTREAM_REPO: wayland/wayland
   FDO_REPO_SUFFIX: "$BUILD_OS/$BUILD_ARCH"
-  # bump this tag every time you change something which requires rebuilding the
-  # base image
-  FDO_DISTRIBUTION_TAG: "2021-08-03.0"
 
 
 # Define the build stages. These are used for UI grouping as well as
@@ -77,6 +75,9 @@ stages:
     FDO_DISTRIBUTION_VERSION: buster
     FDO_DISTRIBUTION_PACKAGES: 'build-essential pkg-config libexpat1-dev libffi-dev libxml2-dev doxygen graphviz xmlto xsltproc docbook-xsl python3-pip python3-setuptools ninja-build'
     FDO_DISTRIBUTION_EXEC: 'pip3 install meson==0.52.1'
+    # bump this tag every time you change something which requires rebuilding the
+    # base image
+    FDO_DISTRIBUTION_TAG: "2021-08-03.0"
 
 .debian-x86_64:
   extends:
@@ -230,6 +231,37 @@ armv7-debian-container_prep:
       junit: build-*/meson-logs/testlog.junit.xml
 
 # Full build and test.
+.do-build-qemu:
+  extends:
+    - .ci-rules
+  stage: "Build and test"
+  script:
+    # Start the VM and copy our workspace to the VM
+    - /app/vmctl start
+    - scp -r $PWD "vm:"
+    # The `set +e is needed to ensure that we always copy the meson logs back to
+    # the workspace to see details about the failed tests.
+    - |
+      set +e
+      /app/vmctl exec "pkg info; cd $CI_PROJECT_NAME ; meson $BUILDDIR --prefix=$PREFIX $MESON_BUILD_TYPE $MESON_ARGS && ninja -C $BUILDDIR -j${FDO_CI_CONCURRENT:-4}"
+      /app/vmctl exec "meson test --print-errorlogs -C $BUILDDIR --num-processes ${FDO_CI_CONCURRENT:-4}" && touch .tests-successful
+      set -ex
+      scp -r vm:$BUILDDIR/meson-logs .
+      /app/vmctl exec "ninja -C $BUILDDIR install"
+      mkdir -p $PREFIX && scp -r vm:$PREFIX/ $PREFIX/
+    # Finally, shut down the VM.
+    - /app/vmctl stop
+    - test -f .tests-successful || exit 1
+  artifacts:
+    name: wayland-$CI_JOB_NAME
+    when: always
+    paths:
+      - meson-logs
+      - prefix-*
+    reports:
+      junit: meson-logs/testlog.junit.xml
+
+# Full build and test.
 x86_64-debian-build:
   extends:
     - .build-env-debian-x86_64
@@ -261,4 +293,58 @@ armv7-release-debian-build:
   extends:
     - .build-env-debian-armv7
     - .do-build
+    - .build-release
+
+# Base variables used for anything using a FreeBSD environment
+.os-freebsd:
+  variables:
+    BUILD_OS: freebsd
+    FDO_DISTRIBUTION_VERSION: "13.0"
+    FDO_DISTRIBUTION_PACKAGES: 'libxslt meson ninja pkgconf expat libffi libepoll-shim libxml2'
+    # bump this tag every time you change something which requires rebuilding the
+    # base image
+    FDO_DISTRIBUTION_TAG: "2021-08-05.0"
+    # Don't build documentation since installing the required tools massively
+    # increases the VM image (and therefore container) size.
+    MESON_ARGS: "-Ddocumentation=false"
+
+.freebsd-x86_64:
+  extends:
+    - .os-freebsd
+  variables:
+    BUILD_ARCH: "x86_64"
+
+x86_64-freebsd-container_prep:
+  extends:
+    - .ci-rules
+    - .freebsd-x86_64
+    - .fdo.qemu-build@freebsd@x86_64
+  stage: "Base container"
+  variables:
+    GIT_STRATEGY: none
+
+.build-env-freebsd-x86_64:
+  variables:
+    # Compiling with ASan+UBSan appears to trigger an infinite loop in the
+    # compiler shipped with FreeBSD 13.0, so we only use UBSan here.
+    # Additionally, sanitizers can't be used with b_lundef on FreeBSD.
+    MESON_BUILD_TYPE: "-Dbuildtype=debug -Db_sanitize=undefined -Db_lundef=false"
+  extends:
+    - .fdo.suffixed-image@freebsd
+    - .freebsd-x86_64
+    - .build-env
+  needs:
+    - job: x86_64-freebsd-container_prep
+      artifacts: false
+
+# Full build and test.
+x86_64-freebsd-build:
+  extends:
+    - .build-env-freebsd-x86_64
+    - .do-build-qemu
+
+x86_64-release-freebsd-build:
+  extends:
+    - .build-env-freebsd-x86_64
+    - .do-build-qemu
     - .build-release
