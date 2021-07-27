@@ -226,7 +226,8 @@ armv7-debian-container_prep:
     paths:
       - build-*/meson-logs
       - prefix-*
-
+    reports:
+      junit: build-*/meson-logs/testlog.junit.xml
 
 # Full build and test.
 x86_64-debian-build:
