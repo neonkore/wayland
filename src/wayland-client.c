@@ -1246,7 +1246,9 @@ wl_display_connect(const char *name)
 		errno = prev_errno;
 
 		flags = fcntl(fd, F_GETFD);
-		if (flags != -1)
+		if (flags == -1 && errno == EBADF)
+			return NULL;
+		else if (flags != -1)
 			fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
 		unsetenv("WAYLAND_SOCKET");
 	} else {
