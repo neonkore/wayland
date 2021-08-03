@@ -220,7 +220,8 @@ armv7-debian-container_prep:
   script:
     - cd "$BUILDDIR"
     - meson --prefix="$PREFIX" -Dicon_directory=/usr/share/X11/icons ${MESON_BUILD_TYPE} ..
-    - ninja -k0 test
+    - ninja -k0 -j${FDO_CI_CONCURRENT:-4}
+    - meson test --num-processes ${FDO_CI_CONCURRENT:-4}
     - ninja clean
   artifacts:
     name: wayland-meson-$CI_COMMIT_SHA-$CI_JOB_ID
