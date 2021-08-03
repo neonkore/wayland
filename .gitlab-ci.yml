@@ -159,9 +159,9 @@ armv7-debian-container_prep:
   variables:
     MESON_BUILD_TYPE: "-Dbuildtype=debug -Doptimization=0 -Db_sanitize=address,undefined"
   before_script:
-    - export BUILD_ID="wayland-$CI_JOB_NAME-$CI_COMMIT_SHA-$CI_JOB_ID"
-    - export PREFIX="$(pwd)/prefix-$BUILD_ID"
-    - export BUILDDIR="$(pwd)/build-$BUILD_ID"
+    - export BUILD_ID="wayland-$CI_JOB_NAME"
+    - export PREFIX="${CI_PROJECT_DIR}/prefix-${BUILD_ID}"
+    - export BUILDDIR="${CI_PROJECT_DIR}/build-${BUILD_ID}"
     - mkdir "$BUILDDIR" "$PREFIX"
 
 
@@ -224,10 +224,10 @@ armv7-debian-container_prep:
     - meson test --num-processes ${FDO_CI_CONCURRENT:-4}
     - ninja clean
   artifacts:
-    name: wayland-meson-$CI_COMMIT_SHA-$CI_JOB_ID
+    name: wayland-$CI_JOB_NAME
     when: always
     paths:
-      - build-meson/meson-logs
+      - build-*/meson-logs
       - prefix-*
 
 
