@@ -68,6 +68,9 @@ stages:
   - "Base container"
   - "Build and test"
 
+.ci-rules:
+  rules:
+    - when: on_success
 
 # Base variables used for anything using a Debian environment
 .os-debian:
@@ -96,10 +99,15 @@ stages:
     BUILD_ARCH: "armv7"
 
 
+# Does not inherit .ci-rules as we only want it to run in MR context.
 check-commit:
   extends:
     - .fdo.ci-fairy
   stage: "Merge request checks"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    - when: never
   script:
     - ci-fairy check-commits --signed-off-by --junit-xml=results.xml
   variables:
@@ -114,6 +122,7 @@ check-commit:
 # stage.
 x86_64-debian-container_prep:
   extends:
+    - .ci-rules
     - .debian-x86_64
     - .fdo.container-build@debian
   stage: "Base container"
@@ -122,6 +131,7 @@ x86_64-debian-container_prep:
 
 aarch64-debian-container_prep:
   extends:
+    - .ci-rules
     - .debian-aarch64
     - .fdo.container-build@debian
   tags:
@@ -132,6 +142,7 @@ aarch64-debian-container_prep:
 
 armv7-debian-container_prep:
   extends:
+    - .ci-rules
     - .debian-armv7
     - .fdo.container-build@debian
   tags:
@@ -193,6 +204,8 @@ armv7-debian-container_prep:
 
 # Full build and test.
 .do-build:
+  extends:
+  - .ci-rules
   stage: "Build and test"
   script:
   - cd "$BUILDDIR"
