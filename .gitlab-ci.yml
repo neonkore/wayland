@@ -89,6 +89,12 @@ stages:
   variables:
     BUILD_ARCH: "aarch64"
 
+.debian-armv7:
+  extends:
+    - .os-debian
+  variables:
+    BUILD_ARCH: "armv7"
+
 
 check-commit:
   extends:
@@ -123,6 +129,17 @@ aarch64-debian-container_prep:
   stage: "Base container"
   variables:
     GIT_STRATEGY: none
+
+armv7-debian-container_prep:
+  extends:
+    - .debian-armv7
+    - .fdo.container-build@debian
+  tags:
+    - aarch64
+  stage: "Base container"
+  variables:
+    GIT_STRATEGY: none
+    FDO_BASE_IMAGE: "arm32v7/debian:$FDO_DISTRIBUTION_VERSION"
 
 
 # Core build environment.
@@ -162,6 +179,17 @@ aarch64-debian-container_prep:
     - job: aarch64-debian-container_prep
       artifacts: false
 
+.build-env-debian-armv7:
+  extends:
+    - .fdo.suffixed-image@debian
+    - .debian-armv7
+    - .build-env
+  tags:
+    - aarch64
+  needs:
+    - job: armv7-debian-container_prep
+      artifacts: false
+
 
 # Full build and test.
 .do-build:
@@ -188,4 +216,9 @@ x86_64-debian-build:
 aarch64-debian-build:
   extends:
     - .build-env-debian-aarch64
+    - .do-build
+
+armv7-debian-build:
+  extends:
+    - .build-env-debian-armv7
     - .do-build
