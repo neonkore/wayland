@@ -205,19 +205,19 @@ armv7-debian-container_prep:
 # Full build and test.
 .do-build:
   extends:
-  - .ci-rules
+    - .ci-rules
   stage: "Build and test"
   script:
-  - cd "$BUILDDIR"
-  - meson --prefix="$PREFIX" -Db_sanitize=address,undefined -Dicon_directory=/usr/share/X11/icons ..
-  - ninja -k0 test
-  - ninja clean
+    - cd "$BUILDDIR"
+    - meson --prefix="$PREFIX" -Db_sanitize=address,undefined -Dicon_directory=/usr/share/X11/icons ..
+    - ninja -k0 test
+    - ninja clean
   artifacts:
     name: wayland-meson-$CI_COMMIT_SHA-$CI_JOB_ID
     when: always
     paths:
-    - build-meson/meson-logs
-    - prefix-*
+      - build-meson/meson-logs
+      - prefix-*
 
 
 # Full build and test.
