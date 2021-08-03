@@ -67,6 +67,7 @@ stages:
   - "Merge request checks"
   - "Base container"
   - "Build and test"
+  - "Other build configurations"
 
 .ci-rules:
   rules:
@@ -155,11 +156,20 @@ armv7-debian-container_prep:
 
 # Core build environment.
 .build-env:
+  variables:
+    MESON_BUILD_TYPE: "-Dbuildtype=debug -Doptimization=0 -Db_sanitize=address,undefined"
   before_script:
     - export BUILD_ID="wayland-$CI_JOB_NAME-$CI_COMMIT_SHA-$CI_JOB_ID"
     - export PREFIX="$(pwd)/prefix-$BUILD_ID"
     - export BUILDDIR="$(pwd)/build-$BUILD_ID"
     - mkdir "$BUILDDIR" "$PREFIX"
+
+
+# Build variants to be stacked on as required.
+.build-release:
+  stage: "Other build configurations"
+  variables:
+    MESON_BUILD_TYPE: "-Dbuildtype=release"
 
 
 # OS/architecture-specific variants
@@ -209,7 +219,7 @@ armv7-debian-container_prep:
   stage: "Build and test"
   script:
     - cd "$BUILDDIR"
-    - meson --prefix="$PREFIX" -Db_sanitize=address,undefined -Dicon_directory=/usr/share/X11/icons ..
+    - meson --prefix="$PREFIX" -Dicon_directory=/usr/share/X11/icons ${MESON_BUILD_TYPE} ..
     - ninja -k0 test
     - ninja clean
   artifacts:
@@ -226,12 +236,30 @@ x86_64-debian-build:
     - .build-env-debian-x86_64
     - .do-build
 
+x86_64-release-debian-build:
+  extends:
+    - .build-env-debian-x86_64
+    - .do-build
+    - .build-release
+
 aarch64-debian-build:
   extends:
     - .build-env-debian-aarch64
     - .do-build
 
+aarch64-release-debian-build:
+  extends:
+    - .build-env-debian-aarch64
+    - .do-build
+    - .build-release
+
 armv7-debian-build:
   extends:
     - .build-env-debian-armv7
     - .do-build
+
+armv7-release-debian-build:
+  extends:
+    - .build-env-debian-armv7
+    - .do-build
+    - .build-release
