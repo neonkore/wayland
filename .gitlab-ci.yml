@@ -83,6 +83,12 @@ stages:
   variables:
     BUILD_ARCH: "x86-64"
 
+.debian-aarch64:
+  extends:
+    - .os-debian
+  variables:
+    BUILD_ARCH: "aarch64"
+
 
 check-commit:
   extends:
@@ -108,6 +114,16 @@ x86_64-debian-container_prep:
   variables:
     GIT_STRATEGY: none
 
+aarch64-debian-container_prep:
+  extends:
+    - .debian-aarch64
+    - .fdo.container-build@debian
+  tags:
+    - aarch64
+  stage: "Base container"
+  variables:
+    GIT_STRATEGY: none
+
 
 # Core build environment.
 .build-env:
@@ -126,6 +142,24 @@ x86_64-debian-container_prep:
     - .build-env
   needs:
     - job: x86_64-debian-container_prep
+      artifacts: false
+
+.build-env-debian-aarch64:
+  extends:
+    - .fdo.suffixed-image@debian
+    - .debian-aarch64
+    - .build-env
+  variables:
+    # At least with the versions we have, the LSan runtime makes fork unusably
+    # slow on AArch64, which is bad news since the test suite decides to fork
+    # for every single subtest. For now, in order to get AArch64 builds and
+    # tests into CI, just assume that we're not going to leak any more on
+    # AArch64 than we would on ARMv7 or x86-64.
+    ASAN_OPTIONS: "detect_leaks=0"
+  tags:
+    - aarch64
+  needs:
+    - job: aarch64-debian-container_prep
       artifacts: false
 
 
@@ -149,4 +183,9 @@ x86_64-debian-container_prep:
 x86_64-debian-build:
   extends:
     - .build-env-debian-x86_64
+    - .do-build
+
+aarch64-debian-build:
+  extends:
+    - .build-env-debian-aarch64
     - .do-build
