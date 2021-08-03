@@ -53,6 +53,13 @@ include:
     ref: *template_sha
     file: '/templates/ci-fairy.yml'
 
+variables:
+  FDO_UPSTREAM_REPO: wayland/wayland
+  FDO_REPO_SUFFIX: "$BUILD_OS/$BUILD_ARCH"
+  # bump this tag every time you change something which requires rebuilding the
+  # base image
+  FDO_DISTRIBUTION_TAG: "2021-08-03.0"
+
 
 # Define the build stages. These are used for UI grouping as well as
 # dependencies.
@@ -63,23 +70,18 @@ stages:
 
 
 # Base variables used for anything using a Debian environment
-variables:
-  DEBIAN_PACKAGES: 'build-essential pkg-config libexpat1-dev libffi-dev libxml2-dev doxygen graphviz xmlto xsltproc docbook-xsl python3-pip python3-setuptools ninja-build'
-  DEBIAN_EXEC: 'pip3 install meson==0.52.1'
-  # these tags should be updated each time the list of packages is updated
-  # changing these will force rebuilding the associated image
-  # Note: these tags have no meaning and are not tied to a particular
-  # wayland version
-  DEBIAN_TAG: '2020-12-14.0'
-  FDO_UPSTREAM_REPO: wayland/wayland
-
-
-.debian.buster:
+.os-debian:
   variables:
-    FDO_DISTRIBUTION_PACKAGES: $DEBIAN_PACKAGES
-    FDO_DISTRIBUTION_TAG: $DEBIAN_TAG
-    FDO_DISTRIBUTION_VERSION: 'buster'
-    FDO_DISTRIBUTION_EXEC: $DEBIAN_EXEC
+    BUILD_OS: debian
+    FDO_DISTRIBUTION_VERSION: buster
+    FDO_DISTRIBUTION_PACKAGES: 'build-essential pkg-config libexpat1-dev libffi-dev libxml2-dev doxygen graphviz xmlto xsltproc docbook-xsl python3-pip python3-setuptools ninja-build'
+    FDO_DISTRIBUTION_EXEC: 'pip3 install meson==0.52.1'
+
+.debian-x86_64:
+  extends:
+    - .os-debian
+  variables:
+    BUILD_ARCH: "x86-64"
 
 
 check-commit:
@@ -98,26 +100,39 @@ check-commit:
 # Build our base container image, which contains the core distribution, the
 # toolchain, and all our build dependencies. This will be reused in the build
 # stage.
-debian:buster@container-prep:
+x86_64-debian-container_prep:
   extends:
-    - .debian.buster
+    - .debian-x86_64
     - .fdo.container-build@debian
   stage: "Base container"
   variables:
     GIT_STRATEGY: none
 
 
-# Full build and test.
-build-native:
+# Core build environment.
+.build-env:
+  before_script:
+    - export BUILD_ID="wayland-$CI_JOB_NAME-$CI_COMMIT_SHA-$CI_JOB_ID"
+    - export PREFIX="$(pwd)/prefix-$BUILD_ID"
+    - export BUILDDIR="$(pwd)/build-$BUILD_ID"
+    - mkdir "$BUILDDIR" "$PREFIX"
+
+
+# OS/architecture-specific variants
+.build-env-debian-x86_64:
   extends:
-    - .debian.buster
-    - .fdo.distribution-image@debian
+    - .fdo.suffixed-image@debian
+    - .debian-x86_64
+    - .build-env
+  needs:
+    - job: x86_64-debian-container_prep
+      artifacts: false
+
+
+# Full build and test.
+.do-build:
   stage: "Build and test"
   script:
-  - export BUILD_ID="wayland-$CI_JOB_NAME_$CI_COMMIT_SHA-$CI_JOB_ID"
-  - export PREFIX="$(pwd)/prefix-$BUILD_ID"
-  - export BUILDDIR="$(pwd)/build-$BUILD_ID"
-  - mkdir "$BUILDDIR" "$PREFIX"
   - cd "$BUILDDIR"
   - meson --prefix="$PREFIX" -Db_sanitize=address,undefined -Dicon_directory=/usr/share/X11/icons ..
   - ninja -k0 test
@@ -128,3 +143,10 @@ build-native:
     paths:
     - build-meson/meson-logs
     - prefix-*
+
+
+# Full build and test.
+x86_64-debian-build:
+  extends:
+    - .build-env-debian-x86_64
+    - .do-build
