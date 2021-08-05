@@ -252,7 +252,7 @@ err_free_cursor:
 }
 
 static void
-load_default_theme(struct wl_cursor_theme *theme)
+load_fallback_theme(struct wl_cursor_theme *theme)
 {
 	uint32_t i;
 
@@ -408,7 +408,7 @@ wl_cursor_theme_load(const char *name, int size, struct wl_shm *shm)
 		xcursor_load_theme(NULL, size, load_callback, theme);
 
 	if (theme->cursor_count == 0)
-		load_default_theme(theme);
+		load_fallback_theme(theme);
 
 	return theme;
 
