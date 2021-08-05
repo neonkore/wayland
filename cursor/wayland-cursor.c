@@ -129,7 +129,6 @@ struct wl_cursor_theme {
 	struct wl_cursor **cursors;
 	struct wl_shm *shm;
 	struct shm_pool *pool;
-	char *name;
 	int size;
 };
 
@@ -255,9 +254,6 @@ static void
 load_fallback_theme(struct wl_cursor_theme *theme)
 {
 	uint32_t i;
-
-	free(theme->name);
-	theme->name = strdup("default");
 
 	theme->cursor_count = ARRAY_LENGTH(cursor_metadata);
 	theme->cursors = malloc(theme->cursor_count * sizeof(*theme->cursors));
@@ -391,9 +387,6 @@ wl_cursor_theme_load(const char *name, int size, struct wl_shm *shm)
 	if (!name)
 		name = "default";
 
-	theme->name = strdup(name);
-	if (!theme->name)
-		goto out_error_name;
 	theme->size = size;
 	theme->cursor_count = 0;
 	theme->cursors = NULL;
@@ -413,8 +406,6 @@ wl_cursor_theme_load(const char *name, int size, struct wl_shm *shm)
 	return theme;
 
 out_error_pool:
-	free(theme->name);
-out_error_name:
 	free(theme);
 	return NULL;
 }
@@ -433,7 +424,6 @@ wl_cursor_theme_destroy(struct wl_cursor_theme *theme)
 
 	shm_pool_destroy(theme->pool);
 
-	free(theme->name);
 	free(theme->cursors);
 	free(theme);
 }
