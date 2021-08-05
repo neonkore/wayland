@@ -1,6 +1,6 @@
-# This file uses the freedesktop ci-templates to build Weston and run our
+# This file uses the freedesktop ci-templates to build Wayland and run our
 # tests in CI.
-# 
+#
 # ci-templates uses a multi-stage build process. First, the base container
 # image is built which contains the core distribution, the toolchain, and
 # all our build dependencies. This container is aggressively cached; if a
