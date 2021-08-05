@@ -168,10 +168,22 @@ TEST(event_loop_signal)
 					  signal_callback, &got_it);
 	assert(source);
 
-	wl_event_loop_dispatch(loop, 0);
+	assert(wl_event_loop_dispatch(loop, 0) == 0);
 	assert(!got_it);
-	kill(getpid(), SIGUSR1);
-	wl_event_loop_dispatch(loop, 0);
+	assert(kill(getpid(), SIGUSR1) == 0);
+	/*
+	 * On Linux the signal will be immediately visible in the epoll_wait()
+	 * call. However, on FreeBSD we may need a small delay between kill()
+	 * call and the signal being visible to the kevent() call. This
+	 * sometimes happens when the signal processing and kevent processing
+	 * runs on different CPUs, so becomes more likely when the system is
+	 * under load (e.g. running all tests in parallel).
+	 * See https://github.com/jiixyj/epoll-shim/pull/32
+	 * Passing 1ms as the timeout appears to avoid this race condition in
+	 * all cases tested so far, but to be safe we use 1000ms which should
+	 * be enough time even on a really slow (or emulated) system.
+	 */
+	assert(wl_event_loop_dispatch(loop, 1000) == 0);
 	assert(got_it == 1);
 
 	wl_event_source_remove(source);
@@ -199,8 +211,12 @@ TEST(event_loop_multiple_same_signals)
 	/* Try it more times */
 	for (i = 0; i < 5; ++i) {
 		calls_no = 0;
-		kill(getpid(), SIGUSR1);
-		assert(wl_event_loop_dispatch(loop, 0) == 0);
+		assert(kill(getpid(), SIGUSR1) == 0);
+		/*
+		 * We need a non-zero timeout here to allow the test to pass
+		 * on non-Linux systems (see comment in event_loop_signal).
+		 */
+		assert(wl_event_loop_dispatch(loop, 1000) == 0);
 		assert(calls_no == 2);
 	}
 
@@ -208,8 +224,12 @@ TEST(event_loop_multiple_same_signals)
 
 	/* Try it again  with one source */
 	calls_no = 0;
-	kill(getpid(), SIGUSR1);
-	assert(wl_event_loop_dispatch(loop, 0) == 0);
+	assert(kill(getpid(), SIGUSR1) == 0);
+	/*
+	 * We need a non-zero timeout here to allow the test to pass
+	 * on non-Linux systems (see comment in event_loop_signal).
+	 */
+	assert(wl_event_loop_dispatch(loop, 1000) == 0);
 	assert(calls_no == 1);
 
 	wl_event_source_remove(s2);
