@@ -847,7 +847,7 @@ wl_proxy_marshal_array_flags(struct wl_proxy *proxy, uint32_t opcode,
 	}
 
 	if (debug_client)
-		wl_closure_print(closure, &proxy->object, true, false);
+		wl_closure_print(closure, &proxy->object, true, false, NULL);
 
 	if (wl_closure_send(closure, proxy->display->connection)) {
 		wl_log("Error sending request: %s\n", strerror(errno));
@@ -1531,6 +1531,19 @@ queue_event(struct wl_display *display, int len)
 	return size;
 }
 
+static uint32_t
+id_from_object(union wl_argument *arg)
+{
+	struct wl_proxy *proxy;
+
+	if (arg->o) {
+		proxy = (struct wl_proxy *)arg->o;
+		return proxy->object.id;
+	}
+
+	return 0;
+}
+
 static void
 dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 {
@@ -1550,7 +1563,7 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 	proxy_destroyed = !!(proxy->flags & WL_PROXY_FLAG_DESTROYED);
 	if (proxy_destroyed) {
 		if (debug_client)
-			wl_closure_print(closure, &proxy->object, false, true);
+			wl_closure_print(closure, &proxy->object, false, true, id_from_object);
 		destroy_queued_closure(closure);
 		return;
 	}
@@ -1559,13 +1572,13 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 
 	if (proxy->dispatcher) {
 		if (debug_client)
-			wl_closure_print(closure, &proxy->object, false, false);
+			wl_closure_print(closure, &proxy->object, false, false, id_from_object);
 
 		wl_closure_dispatch(closure, proxy->dispatcher,
 				    &proxy->object, opcode);
 	} else if (proxy->object.implementation) {
 		if (debug_client)
-			wl_closure_print(closure, &proxy->object, false, false);
+			wl_closure_print(closure, &proxy->object, false, false, id_from_object);
 
 		wl_closure_invoke(closure, WL_CLOSURE_INVOKE_CLIENT,
 				  &proxy->object, opcode, proxy->user_data);

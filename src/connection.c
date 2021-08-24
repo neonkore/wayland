@@ -1264,13 +1264,14 @@ wl_closure_queue(struct wl_closure *closure, struct wl_connection *connection)
 
 void
 wl_closure_print(struct wl_closure *closure, struct wl_object *target,
-		 int send, int discarded)
+		 int send, int discarded, uint32_t (*n_parse)(union wl_argument *arg))
 {
 	int i;
 	struct argument_details arg;
 	const char *signature = closure->message->signature;
 	struct timespec tp;
 	unsigned int time;
+	uint32_t nval;
 
 	clock_gettime(CLOCK_REALTIME, &tp);
 	time = (tp.tv_sec * 1000000L) + (tp.tv_nsec / 1000);
@@ -1322,12 +1323,17 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target,
 				fprintf(stderr, "nil");
 			break;
 		case 'n':
+			if (n_parse)
+				nval = n_parse(&closure->args[i]);
+			else
+				nval = closure->args[i].n;
+
 			fprintf(stderr, "new id %s@",
 				(closure->message->types[i]) ?
 				 closure->message->types[i]->name :
 				  "[unknown]");
-			if (closure->args[i].n != 0)
-				fprintf(stderr, "%u", closure->args[i].n);
+			if (nval != 0)
+				fprintf(stderr, "%u", nval);
 			else
 				fprintf(stderr, "nil");
 			break;
