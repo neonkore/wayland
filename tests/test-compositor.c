@@ -329,7 +329,6 @@ struct display *
 display_create(void)
 {
 	struct display *d = NULL;
-	struct wl_global *g;
 	const char *socket_name;
 	int stat = 0;
 
@@ -350,9 +349,10 @@ display_create(void)
 	wl_list_init(&d->waiting_for_resume);
 	d->wfr_num = 0;
 
-	g = wl_global_create(d->wl_display, &test_compositor_interface,
-			     1, d, tc_bind);
-	assert(g && "Creating test global failed");
+	d->test_global = wl_global_create(d->wl_display,
+					  &test_compositor_interface,
+					  1, d, tc_bind);
+	assert(d->test_global && "Creating test global failed");
 
 	return d;
 }
@@ -410,6 +410,7 @@ display_destroy(struct display *d)
 		free(cl);
 	}
 
+	wl_global_destroy(d->test_global);
 	wl_display_destroy(d->wl_display);
 	free(d);
 

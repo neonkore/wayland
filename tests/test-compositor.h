@@ -46,6 +46,7 @@ struct client_info {
 
 struct display {
 	struct wl_display *wl_display;
+	struct wl_global *test_global;
 
 	struct wl_list clients;
 	uint32_t clients_no;
