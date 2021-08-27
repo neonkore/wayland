@@ -44,14 +44,11 @@
 .templates_sha: &template_sha 567700e483aabed992d0a4fea84994a0472deff6 # see https://docs.gitlab.com/ee/ci/yaml/#includefile
 
 include:
-  # Debian container builder template
   - project: 'freedesktop/ci-templates'
     ref: *template_sha
-    file: '/templates/debian.yml'
-  # ci-fairy template
-  - project: 'freedesktop/ci-templates'
-    ref: *template_sha
-    file: '/templates/ci-fairy.yml'
+    file:
+      - '/templates/debian.yml'
+      - '/templates/ci-fairy.yml'
 
 variables:
   FDO_UPSTREAM_REPO: wayland/wayland
