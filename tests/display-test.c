@@ -1629,3 +1629,24 @@ TEST(global_remove)
 
 	display_destroy(d);
 }
+
+static void
+terminate_display(void *arg)
+{
+	struct wl_display *wl_display = arg;
+	wl_display_terminate(wl_display);
+}
+
+TEST(no_source_terminate)
+{
+	struct display *d;
+	struct wl_event_loop *loop;
+
+	d = display_create();
+	loop = wl_display_get_event_loop(d->wl_display);
+
+	wl_event_loop_add_idle(loop, terminate_display, d->wl_display);
+
+	display_run(d);
+	display_destroy(d);
+}
