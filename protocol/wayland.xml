@@ -2220,7 +2220,8 @@
     <event name="keymap">
       <description summary="keyboard mapping">
 	This event provides a file descriptor to the client which can be
-	memory-mapped to provide a keyboard mapping description.
+	memory-mapped in read-only mode to provide a keyboard mapping
+	description.
 
 	From version 7 onwards, the fd must be mapped with MAP_PRIVATE by
 	the recipient, as MAP_SHARED may fail.
