@@ -1,4 +1,3 @@
-wayland_version = meson.project_version().split('.')
 wayland_version_h = configuration_data()
 wayland_version_h.set('WAYLAND_VERSION', meson.project_version())
 wayland_version_h.set('WAYLAND_VERSION_MAJOR', wayland_version[0].to_int())
@@ -151,6 +150,15 @@ if get_option('libraries')
 		output: 'wayland-protocol.c'
 	)
 
+	if wayland_version[0] != '1'
+		# The versioning used for the shared libraries assumes that the major
+		# version of Wayland as a whole will increase to 2 if and only if there
+		# is an ABI break, at which point we should probably bump the SONAME of
+		# all libraries to .so.2. For more details see
+		# https://gitlab.freedesktop.org/wayland/wayland/-/merge_requests/177
+		error('We probably need to bump the SONAME of libwayland-server and -client')
+	endif
+
 	wayland_server = library(
 		'wayland-server',
 		sources: [
@@ -161,7 +169,9 @@ if get_option('libraries')
 			'wayland-shm.c',
 			'event-loop.c'
 		],
-		version: '0.1.0',
+		# To avoid an unnecessary SONAME bump, wayland 1.x.y produces
+		# libwayland-server.so.0.x.y.
+		version: '.'.join(['0', wayland_version[1], wayland_version[2]]),
 		dependencies: [
 			epoll_dep,
 			ffi_dep,
@@ -205,7 +215,9 @@ if get_option('libraries')
 			wayland_protocol_c,
 			'wayland-client.c'
 		],
-		version: '0.3.0',
+		# To avoid an unnecessary SONAME bump, wayland 1.x.y produces
+		# libwayland-client.so.0.x.y.
+		version: '.'.join(['0', wayland_version[1], wayland_version[2]]),
 		dependencies: [
 			epoll_dep,
 			ffi_dep,

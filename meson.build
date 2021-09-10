@@ -8,6 +8,7 @@ project(
 		'buildtype=debugoptimized'
 	]
 )
+wayland_version = meson.project_version().split('.')
 
 config_h = configuration_data()
 config_h.set_quoted('PACKAGE', meson.project_name())

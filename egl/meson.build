@@ -5,7 +5,7 @@ wayland_egl = library(
 		wayland_client_protocol_h
 	],
 	include_directories: src_inc,
-	version: '1.0.0',
+	version: meson.project_version(),
 	install: true
 )
 
