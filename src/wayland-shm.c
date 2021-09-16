@@ -213,7 +213,7 @@ shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 	}
 
 	if (offset < 0 || width <= 0 || height <= 0 || stride < width ||
-	    INT32_MAX / stride <= height ||
+	    INT32_MAX / stride < height ||
 	    offset > pool->size - stride * height) {
 		wl_resource_post_error(resource,
 				       WL_SHM_ERROR_INVALID_STRIDE,
