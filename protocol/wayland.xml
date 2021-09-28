@@ -2560,6 +2560,9 @@
 	The physical size can be set to zero if it doesn't make sense for this
 	output (e.g. for projectors or virtual outputs).
 
+	The geometry event will be followed by a done event (starting from
+	version 2).
+
 	Note: wl_output only advertises partial information about the output
 	position and identification. Some compositors, for instance those not
 	implementing a desktop-style output layout or those exposing virtual
@@ -2621,6 +2624,9 @@
 	The vertical refresh rate can be set to zero if it doesn't make
 	sense for this output (e.g. for virtual outputs).
 
+	The mode event will be followed by a done event (starting from
+	version 2).
+
 	Clients should not use the refresh rate to schedule frames. Instead,
 	they should use the wl_surface.frame event or the presentation-time
 	protocol.
@@ -2667,6 +2673,8 @@
 	the scale of the output. That way the compositor can
 	avoid scaling the surface, and the client can supply
 	a higher detail image.
+
+	The scale event will be followed by a done event.
       </description>
       <arg name="factor" type="int" summary="scaling factor of output"/>
     </event>
