@@ -1057,7 +1057,8 @@
       a basic surface.
 
       Note! This protocol is deprecated and not intended for production use.
-      For desktop-style user interfaces, use xdg_shell.
+      For desktop-style user interfaces, use xdg_shell. Compositors and clients
+      should not implement this interface.
     </description>
 
     <enum name="error">
