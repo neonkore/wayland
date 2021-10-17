@@ -38,6 +38,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <assert.h>
 #include <signal.h>
@@ -299,6 +300,7 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 		uint32_t id, int fd, int32_t size)
 {
 	struct wl_shm_pool *pool;
+	struct stat statbuf;
 	int seals;
 	int prot;
 	int flags;
@@ -320,7 +322,11 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 	seals = fcntl(fd, F_GET_SEALS);
 	if (seals == -1)
 		seals = 0;
-	pool->sigbus_is_impossible = (seals & F_SEAL_SHRINK) ? true : false;
+
+	if ((seals & F_SEAL_SHRINK) && fstat(fd, &statbuf) >= 0)
+		pool->sigbus_is_impossible = statbuf.st_size >= size;
+	else
+		pool->sigbus_is_impossible = false;
 #else
 	pool->sigbus_is_impossible = false;
 #endif
