@@ -296,6 +296,9 @@
 	The drm format codes match the macros defined in drm_fourcc.h, except
 	argb8888 and xrgb8888. The formats actually supported by the compositor
 	will be reported by the format event.
+
+	For all wl_shm formats and unless specified in another protocol
+	extension, pre-multiplied alpha is used for pixel values.
       </description>
       <!-- Note to protocol writers: don't update this list manually, instead
 	   run the automated script that keeps it in sync with drm_fourcc.h. -->
