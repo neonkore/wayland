@@ -406,6 +406,10 @@
       <entry name="nv15" value="0x3531564e" summary="2x2 subsampled Cr:Cb plane"/>
       <entry name="q410" value="0x30313451"/>
       <entry name="q401" value="0x31303451"/>
+      <entry name="xrgb16161616" value="0x38345258" summary="[63:0] x:R:G:B 16:16:16:16 little endian"/>
+      <entry name="xbgr16161616" value="0x38344258" summary="[63:0] x:B:G:R 16:16:16:16 little endian"/>
+      <entry name="argb16161616" value="0x38345241" summary="[63:0] A:R:G:B 16:16:16:16 little endian"/>
+      <entry name="abgr16161616" value="0x38344241" summary="[63:0] A:B:G:R 16:16:16:16 little endian"/>
     </enum>
 
     <request name="create_pool">
