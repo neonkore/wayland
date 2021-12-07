@@ -36,3 +36,12 @@ pkgconfig.generate(
 	libraries: wayland_cursor,
 	filebase: 'wayland-cursor',
 )
+
+wayland_cursor_dep = declare_dependency(
+	link_with: wayland_cursor,
+	include_directories: [ root_inc, include_directories('.') ],
+)
+
+if meson.version().version_compare('>= 0.54.0')
+	meson.override_dependency('wayland-cursor', wayland_cursor_dep)
+endif

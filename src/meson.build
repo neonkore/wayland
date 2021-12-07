@@ -207,6 +207,10 @@ if get_option('libraries')
 		]
 	)
 
+	if meson.version().version_compare('>= 0.54.0')
+		meson.override_dependency('wayland-server', wayland_server_dep)
+	endif
+
 	wayland_client = library(
 		'wayland-client',
 		sources: [
@@ -250,6 +254,10 @@ if get_option('libraries')
 			wayland_client_protocol_h
 		]
 	)
+
+	if meson.version().version_compare('>= 0.54.0')
+		meson.override_dependency('wayland-client', wayland_client_dep)
+	endif
 
 	install_headers([
 		'wayland-util.h',

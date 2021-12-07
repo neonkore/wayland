@@ -41,3 +41,12 @@ pkgconfig.generate(
 	description: 'Backend wayland-egl interface',
 	version: '3'
 )
+
+wayland_egl_dep = declare_dependency(
+	link_with: wayland_egl,
+	include_directories: [ root_inc, include_directories('.') ],
+)
+
+if meson.version().version_compare('>= 0.54.0')
+	meson.override_dependency('wayland-egl', wayland_egl_dep)
+endif
