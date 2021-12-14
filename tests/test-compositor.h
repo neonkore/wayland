@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <unistd.h>
+#include <stdatomic.h>
 
 #include "wayland-server.h"
 #include "wayland-client.h"
@@ -65,7 +66,7 @@ struct client {
 	struct wl_display *wl_display;
 	struct test_compositor *tc;
 
-	int display_stopped;
+	atomic_bool display_stopped;
 };
 
 struct client *client_connect(void);
