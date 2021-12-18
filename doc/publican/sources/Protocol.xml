@@ -149,9 +149,9 @@
 	  <term>string</term>
 	  <listitem>
 	    <para>
-	      Starts with an unsigned 32-bit length, followed by the
-	      string contents, including terminating null byte, then padding
-	      to a 32-bit boundary.
+	      Starts with an unsigned 32-bit length (including null terminator),
+	      followed by the string contents, including terminating null byte,
+	      then padding to a 32-bit boundary.
 	    </para>
 	  </listitem>
 	</varlistentry>
