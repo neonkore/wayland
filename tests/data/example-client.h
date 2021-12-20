@@ -2400,7 +2400,7 @@ struct wl_data_device_listener {
 	 * which will subsequently be used in either the data_device.enter
 	 * event (for drag-and-drop) or the data_device.selection event
 	 * (for selections). Immediately following the
-	 * data_device_data_offer event, the new data_offer object will
+	 * data_device.data_offer event, the new data_offer object will
 	 * send out data_offer.offer events to describe the mime types it
 	 * offers.
 	 * @param id the new data_offer object
