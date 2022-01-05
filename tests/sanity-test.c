@@ -174,7 +174,7 @@ FAIL_TEST(tc_client_fd_leaks_exec)
 {
 	struct display *d = display_create();
 
-	client_create_noarg(d, sanity_fd_leak);
+	client_create_noarg(d, sanity_fd_leak_exec);
 	display_run(d);
 
 	test_disable_coredumps();
