@@ -14,6 +14,12 @@ config_h = configuration_data()
 config_h.set_quoted('PACKAGE', meson.project_name())
 config_h.set_quoted('PACKAGE_VERSION', meson.project_version())
 
+cc_args = []
+if host_machine.system() != 'freebsd'
+	cc_args += ['-D_POSIX_C_SOURCE=200809L']
+endif
+add_project_arguments(cc_args, language: 'c')
+
 compiler_flags = [
 	'-Wno-unused-parameter',
 	'-Wstrict-prototypes',
@@ -79,7 +85,7 @@ if get_option('libraries')
 	]
 
 	foreach d: decls
-		if not cc.has_header_symbol(d['header'], d['symbol'], dependencies: epoll_dep)
+		if not cc.has_header_symbol(d['header'], d['symbol'], dependencies: epoll_dep, args: cc_args)
 			error('@0@ is needed to compile Wayland libraries'.format(d['symbol']))
 		endif
 	endforeach
@@ -87,7 +93,7 @@ if get_option('libraries')
 	rt_dep = []
 	if not cc.has_function('clock_gettime', prefix: '#include <time.h>')
 		rt_dep = cc.find_library('rt')
-		if not cc.has_function('clock_gettime', prefix: '#include <time.h>', dependencies: rt_dep)
+		if not cc.has_function('clock_gettime', prefix: '#include <time.h>', dependencies: rt_dep, args: cc_args)
 			error('clock_gettime not found')
 		endif
 	endif
