@@ -70,7 +70,7 @@ static int fall_back;
 
 #define REAL(func) (__interceptor_ ## func) ?				\
 	__interceptor_ ## func :					\
-	(typeof(&__interceptor_ ## func))dlsym(RTLD_NEXT, #func)
+	(__typeof__(&__interceptor_ ## func))dlsym(RTLD_NEXT, #func)
 
 DECL(int, socket, int, int, int);
 DECL(int, fcntl, int, int, ...);
