@@ -5,7 +5,8 @@ project(
 	meson_version: '>= 0.52.1',
 	default_options: [
 		'warning_level=2',
-		'buildtype=debugoptimized'
+		'buildtype=debugoptimized',
+		'c_std=c99',
 	]
 )
 wayland_version = meson.project_version().split('.')
