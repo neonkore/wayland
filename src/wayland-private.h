@@ -45,6 +45,7 @@
 #define WL_MAP_SERVER_SIDE 0
 #define WL_MAP_CLIENT_SIDE 1
 #define WL_SERVER_ID_START 0xff000000
+#define WL_MAP_MAX_OBJECTS 0x00f00000
 #define WL_CLOSURE_MAX_ARGS 20
 
 struct wl_object {
