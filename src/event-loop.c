@@ -179,7 +179,7 @@ wl_event_loop_add_fd(struct wl_event_loop *loop,
 {
 	struct wl_event_source_fd *source;
 
-	source = malloc(sizeof *source);
+	source = zalloc(sizeof *source);
 	if (source == NULL)
 		return NULL;
 
@@ -568,7 +568,7 @@ wl_event_loop_add_timer(struct wl_event_loop *loop,
 	if (wl_timer_heap_ensure_timerfd(&loop->timers) < 0)
 		return NULL;
 
-	source = malloc(sizeof *source);
+	source = zalloc(sizeof *source);
 	if (source == NULL)
 		return NULL;
 
@@ -718,7 +718,7 @@ wl_event_loop_add_signal(struct wl_event_loop *loop,
 	struct wl_event_source_signal *source;
 	sigset_t mask;
 
-	source = malloc(sizeof *source);
+	source = zalloc(sizeof *source);
 	if (source == NULL)
 		return NULL;
 
@@ -775,7 +775,7 @@ wl_event_loop_add_idle(struct wl_event_loop *loop,
 {
 	struct wl_event_source_idle *source;
 
-	source = malloc(sizeof *source);
+	source = zalloc(sizeof *source);
 	if (source == NULL)
 		return NULL;
 
@@ -885,7 +885,7 @@ wl_event_loop_create(void)
 {
 	struct wl_event_loop *loop;
 
-	loop = malloc(sizeof *loop);
+	loop = zalloc(sizeof *loop);
 	if (loop == NULL)
 		return NULL;
 

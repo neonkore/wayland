@@ -1062,7 +1062,7 @@ wl_display_create(void)
 	if (debug && (strstr(debug, "server") || strstr(debug, "1")))
 		debug_server = 1;
 
-	display = malloc(sizeof *display);
+	display = zalloc(sizeof *display);
 	if (display == NULL)
 		return NULL;
 
@@ -1238,7 +1238,7 @@ wl_global_create(struct wl_display *display,
 		return NULL;
 	}
 
-	global = malloc(sizeof *global);
+	global = zalloc(sizeof *global);
 	if (global == NULL)
 		return NULL;
 
@@ -1822,7 +1822,7 @@ wl_resource_create(struct wl_client *client,
 {
 	struct wl_resource *resource;
 
-	resource = malloc(sizeof *resource);
+	resource = zalloc(sizeof *resource);
 	if (resource == NULL)
 		return NULL;
 
@@ -1888,7 +1888,7 @@ wl_display_add_protocol_logger(struct wl_display *display,
 {
 	struct wl_protocol_logger *logger;
 
-	logger = malloc(sizeof *logger);
+	logger = zalloc(sizeof *logger);
 	if (!logger)
 		return NULL;
 

@@ -343,7 +343,7 @@ wl_display_create_queue(struct wl_display *display)
 {
 	struct wl_event_queue *queue;
 
-	queue = malloc(sizeof *queue);
+	queue = zalloc(sizeof *queue);
 	if (queue == NULL)
 		return NULL;
 

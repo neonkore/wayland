@@ -568,10 +568,10 @@ wl_closure_init(const struct wl_message *message, uint32_t size,
 
 	if (size) {
 		*num_arrays = wl_message_count_arrays(message);
-		closure = malloc(sizeof *closure + size +
+		closure = zalloc(sizeof *closure + size +
 				 *num_arrays * sizeof(struct wl_array));
 	} else {
-		closure = malloc(sizeof *closure);
+		closure = zalloc(sizeof *closure);
 	}
 
 	if (!closure) {

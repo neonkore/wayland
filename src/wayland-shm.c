@@ -223,7 +223,7 @@ shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 		return;
 	}
 
-	buffer = malloc(sizeof *buffer);
+	buffer = zalloc(sizeof *buffer);
 	if (buffer == NULL) {
 		wl_client_post_no_memory(client);
 		return;
@@ -312,7 +312,7 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 		goto err_close;
 	}
 
-	pool = malloc(sizeof *pool);
+	pool = zalloc(sizeof *pool);
 	if (pool == NULL) {
 		wl_client_post_no_memory(client);
 		goto err_close;
