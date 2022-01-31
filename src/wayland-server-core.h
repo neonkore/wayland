@@ -481,6 +481,9 @@ wl_signal_emit(struct wl_signal *signal, void *data)
 		l->notify(l, data);
 }
 
+void
+wl_signal_emit_mutable(struct wl_signal *signal, void *data);
+
 typedef void (*wl_resource_destroy_func_t)(struct wl_resource *resource);
 
 /*

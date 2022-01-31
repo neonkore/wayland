@@ -2096,6 +2096,69 @@ wl_client_for_each_resource(struct wl_client *client,
 	wl_map_for_each(&client->objects, resource_iterator_helper, &context);
 }
 
+static void
+handle_noop(struct wl_listener *listener, void *data)
+{
+	/* Do nothing */
+}
+
+/** Emits this signal, notifying all registered listeners.
+ *
+ * A safer version of wl_signal_emit() which can gracefully handle additions
+ * and deletions of any signal listener from within listener notification
+ * callbacks.
+ *
+ * Listeners deleted during a signal emission and which have not already been
+ * notified at the time of deletion are not notified by that emission.
+ *
+ * Listeners added (or readded) during signal emission are ignored by that
+ * emission.
+ *
+ * Note that repurposing a listener without explicitly removing it and readding
+ * it is not supported and can lead to unexpected behavior.
+ *
+ * \param signal The signal object that will emit the signal
+ * \param data The data that will be emitted with the signal
+ *
+ * \memberof wl_signal
+ * \since 1.20.90
+ */
+WL_EXPORT void
+wl_signal_emit_mutable(struct wl_signal *signal, void *data)
+{
+	struct wl_listener cursor;
+	struct wl_listener end;
+
+	/* Add two special markers: one cursor and one end marker. This way, we
+	 * know that we've already called listeners on the left of the cursor
+	 * and that we don't want to call listeners on the right of the end
+	 * marker. The 'it' function can remove any element it wants from the
+	 * list without troubles.
+	 *
+	 * There was a previous attempt that used to steal the whole list of
+	 * listeners but then that broke wl_signal_get().
+	 *
+	 * wl_list_for_each_safe tries to be safe but it fails: it works fine
+	 * if the current item is removed, but not if the next one is. */
+	wl_list_insert(&signal->listener_list, &cursor.link);
+	cursor.notify = handle_noop;
+	wl_list_insert(signal->listener_list.prev, &end.link);
+	end.notify = handle_noop;
+
+	while (cursor.link.next != &end.link) {
+		struct wl_list *pos = cursor.link.next;
+		struct wl_listener *l = wl_container_of(pos, l, link);
+
+		wl_list_remove(&cursor.link);
+		wl_list_insert(pos, &cursor.link);
+
+		l->notify(l, data);
+	}
+
+	wl_list_remove(&cursor.link);
+	wl_list_remove(&end.link);
+}
+
 /** \cond INTERNAL */
 
 /** Initialize a wl_priv_signal object
