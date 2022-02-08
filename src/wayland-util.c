@@ -239,8 +239,10 @@ wl_map_insert_at(struct wl_map *map, uint32_t flags, uint32_t i, void *data)
 	}
 
 	count = entries->size / sizeof *start;
-	if (count < i)
+	if (count < i) {
+		errno = EINVAL;
 		return -1;
+	}
 
 	if (count == i) {
 		if (!wl_array_add(entries, sizeof *start))

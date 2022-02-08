@@ -485,7 +485,10 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 	proxy->refcount = 1;
 	proxy->version = factory->version;
 
-	wl_map_insert_at(&display->objects, 0, id, proxy);
+	if (wl_map_insert_at(&display->objects, 0, id, proxy) == -1) {
+		free(proxy);
+		return NULL;
+	}
 
 	return proxy;
 }

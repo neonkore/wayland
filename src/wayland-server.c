@@ -1843,9 +1843,11 @@ wl_resource_create(struct wl_client *client,
 	resource->dispatcher = NULL;
 
 	if (wl_map_insert_at(&client->objects, 0, id, resource) < 0) {
-		wl_resource_post_error(client->display_resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "invalid new id %d", id);
+		if (errno == EINVAL) {
+			wl_resource_post_error(client->display_resource,
+					       WL_DISPLAY_ERROR_INVALID_OBJECT,
+					       "invalid new id %d", id);
+		}
 		free(resource);
 		return NULL;
 	}
@@ -2240,10 +2242,12 @@ wl_client_add_resource(struct wl_client *client,
 					  WL_MAP_ENTRY_LEGACY, resource);
 	} else if (wl_map_insert_at(&client->objects, WL_MAP_ENTRY_LEGACY,
 				  resource->object.id, resource) < 0) {
-		wl_resource_post_error(client->display_resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "invalid new id %d",
-				       resource->object.id);
+		if (errno == EINVAL) {
+			wl_resource_post_error(client->display_resource,
+					       WL_DISPLAY_ERROR_INVALID_OBJECT,
+					       "invalid new id %d",
+					       resource->object.id);
+		}
 		return 0;
 	}
 
