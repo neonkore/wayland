@@ -810,10 +810,12 @@ wl_connection_demarshal(struct wl_connection *connection,
 			}
 
 			if (wl_map_reserve_new(objects, id) < 0) {
-				wl_log("not a valid new object id (%u), "
-				       "message %s(%s)\n",
-				       id, message->name, message->signature);
-				errno = EINVAL;
+				if (errno == EINVAL) {
+					wl_log("not a valid new object id (%u), "
+					       "message %s(%s)\n", id,
+					       message->name,
+					       message->signature);
+				}
 				goto err;
 			}
 
