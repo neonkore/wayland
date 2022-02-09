@@ -1826,8 +1826,13 @@ wl_resource_create(struct wl_client *client,
 	if (resource == NULL)
 		return NULL;
 
-	if (id == 0)
+	if (id == 0) {
 		id = wl_map_insert_new(&client->objects, 0, NULL);
+		if (id == 0) {
+			free(resource);
+			return NULL;
+		}
+	}
 
 	resource->object.id = id;
 	resource->object.interface = interface;
@@ -2240,6 +2245,8 @@ wl_client_add_resource(struct wl_client *client,
 		resource->object.id =
 			wl_map_insert_new(&client->objects,
 					  WL_MAP_ENTRY_LEGACY, resource);
+		if (resource->object.id == 0)
+			return 0;
 	} else if (wl_map_insert_at(&client->objects, WL_MAP_ENTRY_LEGACY,
 				  resource->object.id, resource) < 0) {
 		if (errno == EINVAL) {

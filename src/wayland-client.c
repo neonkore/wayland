@@ -430,6 +430,10 @@ proxy_create(struct wl_proxy *factory, const struct wl_interface *interface,
 	proxy->version = version;
 
 	proxy->object.id = wl_map_insert_new(&display->objects, 0, proxy);
+	if (proxy->object.id == 0) {
+		free(proxy);
+		return NULL;
+	}
 
 	return proxy;
 }
@@ -1158,11 +1162,16 @@ wl_display_connect_to_fd(int fd)
 	pthread_cond_init(&display->reader_cond, NULL);
 	display->reader_count = 0;
 
-	wl_map_insert_new(&display->objects, 0, NULL);
+	if (wl_map_insert_at(&display->objects, 0, 0, NULL) == -1)
+		goto err_connection;
 
-	display->proxy.object.interface = &wl_display_interface;
 	display->proxy.object.id =
 		wl_map_insert_new(&display->objects, 0, display);
+
+	if (display->proxy.object.id == 0)
+		goto err_connection;
+
+	display->proxy.object.interface = &wl_display_interface;
 	display->proxy.display = display;
 	display->proxy.object.implementation = (void(**)(void)) &display_listener;
 	display->proxy.user_data = display;
