@@ -277,8 +277,8 @@
       Clients can create wl_shm_pool objects using the create_pool
       request.
 
-      At connection setup time, the wl_shm object emits one or more
-      format events to inform clients about the valid pixel formats
+      On binding the wl_shm object one or more format events
+      are emitted to inform clients about the valid pixel formats
       that can be used for buffers.
     </description>
 
