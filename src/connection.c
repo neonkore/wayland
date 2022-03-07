@@ -1272,11 +1272,18 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target,
 	struct timespec tp;
 	unsigned int time;
 	uint32_t nval;
+	FILE *f;
+	char *buffer;
+	size_t buffer_length;
+
+	f = open_memstream(&buffer, &buffer_length);
+	if (f == NULL)
+		return;
 
 	clock_gettime(CLOCK_REALTIME, &tp);
 	time = (tp.tv_sec * 1000000L) + (tp.tv_nsec / 1000);
 
-	fprintf(stderr, "[%7u.%03u] %s%s%s@%u.%s(",
+	fprintf(f, "[%7u.%03u] %s%s%s@%u.%s(",
 		time / 1000, time % 1000,
 		discarded ? "discarded " : "",
 		send ? " -> " : "",
@@ -1286,41 +1293,41 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target,
 	for (i = 0; i < closure->count; i++) {
 		signature = get_next_argument(signature, &arg);
 		if (i > 0)
-			fprintf(stderr, ", ");
+			fprintf(f, ", ");
 
 		switch (arg.type) {
 		case 'u':
-			fprintf(stderr, "%u", closure->args[i].u);
+			fprintf(f, "%u", closure->args[i].u);
 			break;
 		case 'i':
-			fprintf(stderr, "%d", closure->args[i].i);
+			fprintf(f, "%d", closure->args[i].i);
 			break;
 		case 'f':
 			/* The magic number 390625 is 1e8 / 256 */
 			if (closure->args[i].f >= 0) {
-				fprintf(stderr, "%d.%08d",
+				fprintf(f, "%d.%08d",
 					closure->args[i].f / 256,
 					390625 * (closure->args[i].f % 256));
 			} else {
 
-				fprintf(stderr, "-%d.%08d",
+				fprintf(f, "-%d.%08d",
 					closure->args[i].f / -256,
 					-390625 * (closure->args[i].f % 256));
 			}
 			break;
 		case 's':
 			if (closure->args[i].s)
-				fprintf(stderr, "\"%s\"", closure->args[i].s);
+				fprintf(f, "\"%s\"", closure->args[i].s);
 			else
-				fprintf(stderr, "nil");
+				fprintf(f, "nil");
 			break;
 		case 'o':
 			if (closure->args[i].o)
-				fprintf(stderr, "%s@%u",
+				fprintf(f, "%s@%u",
 					closure->args[i].o->interface->name,
 					closure->args[i].o->id);
 			else
-				fprintf(stderr, "nil");
+				fprintf(f, "nil");
 			break;
 		case 'n':
 			if (n_parse)
@@ -1328,25 +1335,30 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target,
 			else
 				nval = closure->args[i].n;
 
-			fprintf(stderr, "new id %s@",
+			fprintf(f, "new id %s@",
 				(closure->message->types[i]) ?
 				 closure->message->types[i]->name :
 				  "[unknown]");
 			if (nval != 0)
-				fprintf(stderr, "%u", nval);
+				fprintf(f, "%u", nval);
 			else
-				fprintf(stderr, "nil");
+				fprintf(f, "nil");
 			break;
 		case 'a':
-			fprintf(stderr, "array[%zu]", closure->args[i].a->size);
+			fprintf(f, "array[%zu]", closure->args[i].a->size);
 			break;
 		case 'h':
-			fprintf(stderr, "fd %d", closure->args[i].h);
+			fprintf(f, "fd %d", closure->args[i].h);
 			break;
 		}
 	}
 
-	fprintf(stderr, ")\n");
+	fprintf(f, ")\n");
+
+	if (fclose(f) == 0) {
+		fprintf(stderr, "%s", buffer);
+		free(buffer);
+	}
 }
 
 static int
