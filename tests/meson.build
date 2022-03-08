@@ -77,7 +77,7 @@ if add_languages('cpp')
 	)
 endif
 
-sed_path = find_program('sed').path()
+sed_path = find_program('sed').full_path()
 
 if get_option('scanner')
 	test(
