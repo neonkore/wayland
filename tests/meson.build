@@ -65,7 +65,7 @@ executable(
 	dependencies: test_runner_dep
 )
 
-if add_languages('cpp')
+if add_languages('cpp', native: false)
 	test(
 		'cpp-compile-test',
 		executable(
