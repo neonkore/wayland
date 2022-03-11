@@ -136,7 +136,7 @@ os_create_anonymous_file(off_t size)
 #endif
 	{
 		path = getenv("XDG_RUNTIME_DIR");
-		if (!path) {
+		if (!path || path[0] != '/') {
 			errno = ENOENT;
 			return -1;
 		}

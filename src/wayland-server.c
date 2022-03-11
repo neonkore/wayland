@@ -1557,8 +1557,9 @@ wl_socket_init_for_display_name(struct wl_socket *s, const char *name)
 
 	if (name[0] != '/') {
 		runtime_dir = getenv("XDG_RUNTIME_DIR");
-		if (!runtime_dir) {
-			wl_log("error: XDG_RUNTIME_DIR not set in the environment\n");
+		if (!runtime_dir || runtime_dir[0] != '/') {
+			wl_log("error: XDG_RUNTIME_DIR is invalid or not set in"
+			       " the environment\n");
 
 			/* to prevent programs reporting
 			 * "failed to add socket: Success" */
@@ -1718,7 +1719,7 @@ wl_display_add_socket_fd(struct wl_display *display, int sock_fd)
  *
  * If the socket name is a relative path, the Unix socket will be created in
  * the directory pointed to by environment variable XDG_RUNTIME_DIR. If
- * XDG_RUNTIME_DIR is not set, then this function fails and returns -1.
+ * XDG_RUNTIME_DIR is invalid or not set, then this function fails and returns -1.
  *
  * If the socket name is an absolute path, then it is used as-is for the
  * the Unix socket.

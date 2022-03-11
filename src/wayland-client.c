@@ -1076,8 +1076,8 @@ connect_to_socket(const char *name)
 	path_is_absolute = name[0] == '/';
 
 	runtime_dir = getenv("XDG_RUNTIME_DIR");
-	if (!runtime_dir && !path_is_absolute) {
-		wl_log("error: XDG_RUNTIME_DIR not set in the environment.\n");
+	if (((!runtime_dir || runtime_dir[0] != '/') && !path_is_absolute)) {
+		wl_log("error: XDG_RUNTIME_DIR is invalid or not set in the environment.\n");
 		/* to prevent programs reporting
 		 * "failed to create display: Success" */
 		errno = ENOENT;

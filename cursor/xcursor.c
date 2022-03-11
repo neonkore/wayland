@@ -515,7 +515,7 @@ xcursor_library_path(void)
 		return strdup(env_var);
 
 	env_var = getenv("XDG_DATA_HOME");
-	if (!env_var)
+	if (!env_var || env_var[0] != '/')
 		env_var = XDG_DATA_HOME_FALLBACK;
 
 	suffix = CURSORDIR ":" XCURSORPATH;
