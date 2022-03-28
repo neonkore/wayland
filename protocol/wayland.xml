@@ -190,7 +190,7 @@
     </event>
   </interface>
 
-  <interface name="wl_compositor" version="5">
+  <interface name="wl_compositor" version="6">
     <description summary="the compositor singleton">
       A compositor.  This object is a singleton global.  The
       compositor is in charge of combining the contents of multiple
@@ -1358,7 +1358,7 @@
     </event>
   </interface>
 
-  <interface name="wl_surface" version="5">
+  <interface name="wl_surface" version="6">
     <description summary="an onscreen surface">
       A surface is a rectangular area that may be displayed on zero
       or more outputs, and shown any number of times at the compositor's
@@ -1795,6 +1795,21 @@
       <arg name="x" type="int" summary="surface-local x coordinate"/>
       <arg name="y" type="int" summary="surface-local y coordinate"/>
     </request>
+
+    <!-- Version 6 additions -->
+
+    <event name="preferred_buffer_scale" since="6">
+      <description summary="preferred buffer scale for the surface">
+	This event indicates the preferred buffer scale for this surface. It is
+	sent whenever the compositor's preference changes.
+
+	It is intended that scaling aware clients use this event to scale their
+	content and use wl_surface.set_buffer_scale to indicate the scale they
+	have rendered with. This allows clients to supply a higher detail
+	buffer.
+      </description>
+      <arg name="factor" type="int" summary="preferred scaling factor"/>
+    </event>
    </interface>
 
   <interface name="wl_seat" version="8">
