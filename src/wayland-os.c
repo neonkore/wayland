@@ -231,21 +231,22 @@ wl_os_mremap_maymove(int fd, void *old_data, ssize_t *old_size,
 		     ssize_t new_size, int prot, int flags)
 {
 	void *result;
-	/*
-	 * We could try mapping a new block immediately after the current one
+
+	/* Make sure any pending write is flushed. */
+	if (msync(old_data, *old_size, MS_SYNC) != 0)
+		return MAP_FAILED;
+
+	/* We could try mapping a new block immediately after the current one
 	 * with MAP_FIXED, however that is not guaranteed to work and breaks
 	 * on CHERI-enabled architectures since the data pointer will still
-	 * have the bounds of the previous allocation. As this is not a
-	 * performance-critical path, we always map a new region and copy the
-	 * old data to the new region.
+	 * have the bounds of the previous allocation.
 	 */
 	result = mmap(NULL, new_size, prot, flags, fd, 0);
-	if (result != MAP_FAILED) {
-		/* Copy the data over and unmap the old mapping. */
-		memcpy(result, old_data, *old_size);
-		if (munmap(old_data, *old_size) == 0) {
-			*old_size = 0; /* successfully unmapped old data. */
-		}
-	}
+	if (result == MAP_FAILED)
+		return MAP_FAILED;
+
+	if (munmap(old_data, *old_size) == 0)
+		*old_size = 0;
+
 	return result;
 }
