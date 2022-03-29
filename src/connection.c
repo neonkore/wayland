@@ -289,7 +289,7 @@ int
 wl_connection_flush(struct wl_connection *connection)
 {
 	struct iovec iov[2];
-	struct msghdr msg;
+	struct msghdr msg = {0};
 	char cmsg[CLEN];
 	int len = 0, count, clen;
 	uint32_t tail;
@@ -303,13 +303,10 @@ wl_connection_flush(struct wl_connection *connection)
 
 		build_cmsg(&connection->fds_out, cmsg, &clen);
 
-		msg.msg_name = NULL;
-		msg.msg_namelen = 0;
 		msg.msg_iov = iov;
 		msg.msg_iovlen = count;
 		msg.msg_control = (clen > 0) ? cmsg : NULL;
 		msg.msg_controllen = clen;
-		msg.msg_flags = 0;
 
 		do {
 			len = sendmsg(connection->fd, &msg,
