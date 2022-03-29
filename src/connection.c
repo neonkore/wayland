@@ -231,7 +231,7 @@ wl_connection_consume(struct wl_connection *connection, size_t size)
 }
 
 static void
-build_cmsg(struct wl_ring_buffer *buffer, char *data, int *clen)
+build_cmsg(struct wl_ring_buffer *buffer, char *data, size_t *clen)
 {
 	struct cmsghdr *cmsg;
 	size_t size;
@@ -291,7 +291,8 @@ wl_connection_flush(struct wl_connection *connection)
 	struct iovec iov[2];
 	struct msghdr msg = {0};
 	char cmsg[CLEN];
-	int len = 0, count, clen;
+	int len = 0, count;
+	size_t clen;
 	uint32_t tail;
 
 	if (!connection->want_flush)
