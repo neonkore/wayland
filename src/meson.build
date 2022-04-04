@@ -71,6 +71,10 @@ if get_option('scanner')
 		],
 		filebase: 'wayland-scanner'
 	)
+
+	if meson.can_run_host_binaries()
+		meson.override_find_program('wayland-scanner', wayland_scanner)
+	endif
 endif
 
 if meson.is_cross_build() or not get_option('scanner')
