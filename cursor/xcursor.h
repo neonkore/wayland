@@ -29,23 +29,23 @@
 #include <stdint.h>
 
 typedef struct _XcursorImage {
-    uint32_t	    version;	/* version of the image data */
-    uint32_t	    size;	/* nominal size for matching */
-    uint32_t	    width;	/* actual width */
-    uint32_t	    height;	/* actual height */
-    uint32_t	    xhot;	/* hot spot x (must be inside image) */
-    uint32_t	    yhot;	/* hot spot y (must be inside image) */
-    uint32_t	    delay;	/* animation delay to next frame (ms) */
-    uint32_t	*pixels;	/* pointer to pixels */
+	uint32_t version; /* version of the image data */
+	uint32_t size; /* nominal size for matching */
+	uint32_t width; /* actual width */
+	uint32_t height; /* actual height */
+	uint32_t xhot; /* hot spot x (must be inside image) */
+	uint32_t yhot; /* hot spot y (must be inside image) */
+	uint32_t delay; /* animation delay to next frame (ms) */
+	uint32_t *pixels; /* pointer to pixels */
 } XcursorImage;
 
 /*
  * Other data structures exposed by the library API
  */
 typedef struct _XcursorImages {
-    int		    nimage;	/* number of images */
-    XcursorImage    **images;	/* array of XcursorImage pointers */
-    char	    *name;	/* name used to load images */
+	int nimage; /* number of images */
+	XcursorImage **images; /* array of XcursorImage pointers */
+	char *name; /* name used to load images */
 } XcursorImages;
 
 void

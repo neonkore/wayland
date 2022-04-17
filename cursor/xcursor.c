@@ -75,17 +75,17 @@
 #define XCURSOR_FILE_TOC_LEN (3 * 4)
 
 typedef struct _XcursorFileToc {
-    uint32_t	    type;	/* chunk type */
-    uint32_t	    subtype;	/* subtype (size for images) */
-    uint32_t	    position;	/* absolute position in file */
+	uint32_t type; /* chunk type */
+	uint32_t subtype; /* subtype (size for images) */
+	uint32_t position; /* absolute position in file */
 } XcursorFileToc;
 
 typedef struct _XcursorFileHeader {
-    uint32_t	    magic;	/* magic number */
-    uint32_t	    header;	/* byte length of header */
-    uint32_t	    version;	/* file version number */
-    uint32_t	    ntoc;	/* number of toc entries */
-    XcursorFileToc  *tocs;	/* table of contents */
+	uint32_t magic; /* magic number */
+	uint32_t header; /* byte length of header */
+	uint32_t version; /* file version number */
+	uint32_t ntoc; /* number of toc entries */
+	XcursorFileToc *tocs; /* table of contents */
 } XcursorFileHeader;
 
 /*
@@ -107,10 +107,10 @@ typedef struct _XcursorFileHeader {
 #define XCURSOR_CHUNK_HEADER_LEN (4 * 4)
 
 typedef struct _XcursorChunkHeader {
-    uint32_t	    header;	/* bytes in chunk header */
-    uint32_t	    type;	/* chunk type */
-    uint32_t	    subtype;	/* chunk subtype (size for images) */
-    uint32_t	    version;	/* version of this type */
+	uint32_t header; /* bytes in chunk header */
+	uint32_t type; /* chunk type */
+	uint32_t subtype; /* chunk subtype (size for images) */
+	uint32_t version; /* version of this type */
 } XcursorChunkHeader;
 
 /*
@@ -136,9 +136,9 @@ typedef struct _XcursorChunkHeader {
 #define XCURSOR_COMMENT_MAX_LEN 0x100000
 
 typedef struct _XcursorComment {
-    uint32_t	    version;
-    uint32_t	    comment_type;
-    char	    *comment;
+	uint32_t version;
+	uint32_t comment_type;
+	char *comment;
 } XcursorComment;
 
 /*
@@ -165,15 +165,15 @@ typedef struct _XcursorComment {
 typedef struct _XcursorFile XcursorFile;
 
 struct _XcursorFile {
-    void    *closure;
-    int	    (*read)  (XcursorFile *file, unsigned char *buf, int len);
-    int	    (*write) (XcursorFile *file, unsigned char *buf, int len);
-    int	    (*seek)  (XcursorFile *file, long offset, int whence);
+	void *closure;
+	int (*read)(XcursorFile *file, unsigned char *buf, int len);
+	int (*write)(XcursorFile *file, unsigned char *buf, int len);
+	int (*seek)(XcursorFile *file, long offset, int whence);
 };
 
 typedef struct _XcursorComments {
-    int		    ncomment;	/* number of comments */
-    XcursorComment  **comments;	/* array of XcursorComment pointers */
+	int ncomment; /* number of comments */
+	XcursorComment **comments; /* array of XcursorComment pointers */
 } XcursorComments;
 
 /*
