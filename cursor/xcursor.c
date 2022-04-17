@@ -25,6 +25,7 @@
 
 #define _GNU_SOURCE
 #include "xcursor.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -93,16 +94,16 @@
 #define XCURSOR_FILE_TOC_LEN	(3 * 4)
 
 typedef struct _XcursorFileToc {
-    XcursorUInt	    type;	/* chunk type */
-    XcursorUInt	    subtype;	/* subtype (size for images) */
-    XcursorUInt	    position;	/* absolute position in file */
+    uint32_t	    type;	/* chunk type */
+    uint32_t	    subtype;	/* subtype (size for images) */
+    uint32_t	    position;	/* absolute position in file */
 } XcursorFileToc;
 
 typedef struct _XcursorFileHeader {
-    XcursorUInt	    magic;	/* magic number */
-    XcursorUInt	    header;	/* byte length of header */
-    XcursorUInt	    version;	/* file version number */
-    XcursorUInt	    ntoc;	/* number of toc entries */
+    uint32_t	    magic;	/* magic number */
+    uint32_t	    header;	/* byte length of header */
+    uint32_t	    version;	/* file version number */
+    uint32_t	    ntoc;	/* number of toc entries */
     XcursorFileToc  *tocs;	/* table of contents */
 } XcursorFileHeader;
 
@@ -125,10 +126,10 @@ typedef struct _XcursorFileHeader {
 #define XCURSOR_CHUNK_HEADER_LEN    (4 * 4)
 
 typedef struct _XcursorChunkHeader {
-    XcursorUInt	    header;	/* bytes in chunk header */
-    XcursorUInt	    type;	/* chunk type */
-    XcursorUInt	    subtype;	/* chunk subtype (size for images) */
-    XcursorUInt	    version;	/* version of this type */
+    uint32_t	    header;	/* bytes in chunk header */
+    uint32_t	    type;	/* chunk type */
+    uint32_t	    subtype;	/* chunk subtype (size for images) */
+    uint32_t	    version;	/* version of this type */
 } XcursorChunkHeader;
 
 /*
@@ -154,8 +155,8 @@ typedef struct _XcursorChunkHeader {
 #define XCURSOR_COMMENT_MAX_LEN	    0x100000
 
 typedef struct _XcursorComment {
-    XcursorUInt	    version;
-    XcursorUInt	    comment_type;
+    uint32_t	    version;
+    uint32_t	    comment_type;
     char	    *comment;
 } XcursorComment;
 
@@ -209,11 +210,11 @@ XcursorImageCreate (int width, int height)
        return NULL;
 
     image = malloc (sizeof (XcursorImage) +
-		    width * height * sizeof (XcursorPixel));
+		    width * height * sizeof (uint32_t));
     if (!image)
 	return NULL;
     image->version = XCURSOR_IMAGE_VERSION;
-    image->pixels = (XcursorPixel *) (image + 1);
+    image->pixels = (uint32_t *) (image + 1);
     image->size = width > height ? width : height;
     image->width = width;
     image->height = height;
@@ -276,8 +277,8 @@ XcursorImagesSetName (XcursorImages *images, const char *name)
     images->name = new;
 }
 
-static XcursorBool
-_XcursorReadUInt (XcursorFile *file, XcursorUInt *u)
+static bool
+_XcursorReadUInt (XcursorFile *file, uint32_t *u)
 {
     unsigned char   bytes[4];
 
@@ -287,10 +288,10 @@ _XcursorReadUInt (XcursorFile *file, XcursorUInt *u)
     if ((*file->read) (file, bytes, 4) != 4)
 	return XcursorFalse;
 
-    *u = ((XcursorUInt)(bytes[0]) << 0) |
-         ((XcursorUInt)(bytes[1]) << 8) |
-         ((XcursorUInt)(bytes[2]) << 16) |
-         ((XcursorUInt)(bytes[3]) << 24);
+    *u = ((uint32_t)(bytes[0]) << 0) |
+         ((uint32_t)(bytes[1]) << 8) |
+         ((uint32_t)(bytes[2]) << 16) |
+         ((uint32_t)(bytes[3]) << 24);
     return XcursorTrue;
 }
 
@@ -301,7 +302,7 @@ _XcursorFileHeaderDestroy (XcursorFileHeader *fileHeader)
 }
 
 static XcursorFileHeader *
-_XcursorFileHeaderCreate (XcursorUInt ntoc)
+_XcursorFileHeaderCreate (uint32_t ntoc)
 {
     XcursorFileHeader	*fileHeader;
 
@@ -323,7 +324,7 @@ static XcursorFileHeader *
 _XcursorReadFileHeader (XcursorFile *file)
 {
     XcursorFileHeader	head, *fileHeader;
-    XcursorUInt		skip;
+    uint32_t		skip;
     unsigned int	n;
 
     if (!file)
@@ -367,7 +368,7 @@ _XcursorReadFileHeader (XcursorFile *file)
     return fileHeader;
 }
 
-static XcursorBool
+static bool
 _XcursorSeekToToc (XcursorFile		*file,
 		   XcursorFileHeader	*fileHeader,
 		   int			toc)
@@ -378,7 +379,7 @@ _XcursorSeekToToc (XcursorFile		*file,
     return XcursorTrue;
 }
 
-static XcursorBool
+static bool
 _XcursorFileReadChunkHeader (XcursorFile	*file,
 			     XcursorFileHeader	*fileHeader,
 			     int		toc,
@@ -405,15 +406,15 @@ _XcursorFileReadChunkHeader (XcursorFile	*file,
 
 #define dist(a,b)   ((a) > (b) ? (a) - (b) : (b) - (a))
 
-static XcursorDim
+static uint32_t
 _XcursorFindBestSize (XcursorFileHeader *fileHeader,
-		      XcursorDim	size,
+		      uint32_t	size,
 		      int		*nsizesp)
 {
     unsigned int n;
     int		nsizes = 0;
-    XcursorDim	bestSize = 0;
-    XcursorDim	thisSize;
+    uint32_t	bestSize = 0;
+    uint32_t	thisSize;
 
     if (!fileHeader || !nsizesp)
         return 0;
@@ -437,11 +438,11 @@ _XcursorFindBestSize (XcursorFileHeader *fileHeader,
 
 static int
 _XcursorFindImageToc (XcursorFileHeader	*fileHeader,
-		      XcursorDim	size,
+		      uint32_t	size,
 		      int		count)
 {
     unsigned int	toc;
-    XcursorDim		thisSize;
+    uint32_t		thisSize;
 
     if (!fileHeader)
         return 0;
@@ -471,7 +472,7 @@ _XcursorReadImage (XcursorFile		*file,
     XcursorImage	head;
     XcursorImage	*image;
     int			n;
-    XcursorPixel	*p;
+    uint32_t	*p;
 
     if (!file || !fileHeader)
         return NULL;
@@ -525,7 +526,7 @@ static XcursorImages *
 XcursorXcFileLoadImages (XcursorFile *file, int size)
 {
     XcursorFileHeader	*fileHeader;
-    XcursorDim		bestSize;
+    uint32_t		bestSize;
     int			nsize;
     XcursorImages	*images;
     int			n;
@@ -536,7 +537,7 @@ XcursorXcFileLoadImages (XcursorFile *file, int size)
     fileHeader = _XcursorReadFileHeader (file);
     if (!fileHeader)
 	return NULL;
-    bestSize = _XcursorFindBestSize (fileHeader, (XcursorDim) size, &nsize);
+    bestSize = _XcursorFindBestSize (fileHeader, (uint32_t) size, &nsize);
     if (!bestSize)
     {
         _XcursorFileHeaderDestroy (fileHeader);

@@ -28,21 +28,15 @@
 
 #include <stdint.h>
 
-typedef int		XcursorBool;
-typedef uint32_t	XcursorUInt;
-
-typedef XcursorUInt	XcursorDim;
-typedef XcursorUInt	XcursorPixel;
-
 typedef struct _XcursorImage {
-    XcursorUInt	    version;	/* version of the image data */
-    XcursorDim	    size;	/* nominal size for matching */
-    XcursorDim	    width;	/* actual width */
-    XcursorDim	    height;	/* actual height */
-    XcursorDim	    xhot;	/* hot spot x (must be inside image) */
-    XcursorDim	    yhot;	/* hot spot y (must be inside image) */
-    XcursorUInt	    delay;	/* animation delay to next frame (ms) */
-    XcursorPixel    *pixels;	/* pointer to pixels */
+    uint32_t	    version;	/* version of the image data */
+    uint32_t	    size;	/* nominal size for matching */
+    uint32_t	    width;	/* actual width */
+    uint32_t	    height;	/* actual height */
+    uint32_t	    xhot;	/* hot spot x (must be inside image) */
+    uint32_t	    yhot;	/* hot spot y (must be inside image) */
+    uint32_t	    delay;	/* animation delay to next frame (ms) */
+    uint32_t	*pixels;	/* pointer to pixels */
 } XcursorImage;
 
 /*
