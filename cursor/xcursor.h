@@ -49,10 +49,10 @@ typedef struct _XcursorImages {
 } XcursorImages;
 
 void
-XcursorImagesDestroy (XcursorImages *images);
+XcursorImagesDestroy(XcursorImages *images);
 
 void
 xcursor_load_theme(const char *theme, int size,
-		    void (*load_callback)(XcursorImages *, void *),
-		    void *user_data);
+		   void (*load_callback)(XcursorImages *, void *),
+		   void *user_data);
 #endif
