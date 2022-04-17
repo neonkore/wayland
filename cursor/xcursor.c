@@ -183,7 +183,7 @@ typedef struct _XcursorComments {
 static XcursorImage *
 XcursorImageCreate(int width, int height)
 {
-    XcursorImage    *image;
+    XcursorImage *image;
 
     if (width < 0 || height < 0)
        return NULL;
@@ -212,7 +212,7 @@ XcursorImageDestroy(XcursorImage *image)
 static XcursorImages *
 XcursorImagesCreate(int size)
 {
-    XcursorImages   *images;
+    XcursorImages *images;
 
     images = malloc(sizeof(XcursorImages) +
 		     size * sizeof(XcursorImage *));
@@ -227,7 +227,7 @@ XcursorImagesCreate(int size)
 void
 XcursorImagesDestroy(XcursorImages *images)
 {
-    int	n;
+    int n;
 
     if (!images)
         return;
@@ -242,7 +242,7 @@ XcursorImagesDestroy(XcursorImages *images)
 static void
 XcursorImagesSetName(XcursorImages *images, const char *name)
 {
-    char    *new;
+    char *new;
 
     if (!images || !name)
         return;
@@ -261,7 +261,7 @@ XcursorImagesSetName(XcursorImages *images, const char *name)
 static bool
 _XcursorReadUInt(XcursorFile *file, uint32_t *u)
 {
-    unsigned char   bytes[4];
+    unsigned char bytes[4];
 
     if (!file || !u)
         return false;
@@ -285,7 +285,7 @@ _XcursorFileHeaderDestroy(XcursorFileHeader *fileHeader)
 static XcursorFileHeader *
 _XcursorFileHeaderCreate(uint32_t ntoc)
 {
-    XcursorFileHeader	*fileHeader;
+    XcursorFileHeader *fileHeader;
 
     if (ntoc > 0x10000)
 	return NULL;
@@ -304,9 +304,9 @@ _XcursorFileHeaderCreate(uint32_t ntoc)
 static XcursorFileHeader *
 _XcursorReadFileHeader(XcursorFile *file)
 {
-    XcursorFileHeader	head, *fileHeader;
-    uint32_t		skip;
-    unsigned int	n;
+    XcursorFileHeader head, *fileHeader;
+    uint32_t skip;
+    unsigned int n;
 
     if (!file)
         return NULL;
@@ -393,9 +393,9 @@ _XcursorFindBestSize(XcursorFileHeader *fileHeader,
 		      int		*nsizesp)
 {
     unsigned int n;
-    int		nsizes = 0;
-    uint32_t	bestSize = 0;
-    uint32_t	thisSize;
+    int nsizes = 0;
+    uint32_t bestSize = 0;
+    uint32_t thisSize;
 
     if (!fileHeader || !nsizesp)
         return 0;
@@ -422,8 +422,8 @@ _XcursorFindImageToc(XcursorFileHeader	*fileHeader,
 		     uint32_t	size,
 		     int		count)
 {
-    unsigned int	toc;
-    uint32_t		thisSize;
+    unsigned int toc;
+    uint32_t thisSize;
 
     if (!fileHeader)
         return 0;
@@ -449,11 +449,11 @@ _XcursorReadImage(XcursorFile		*file,
 		   XcursorFileHeader	*fileHeader,
 		   int			toc)
 {
-    XcursorChunkHeader	chunkHeader;
-    XcursorImage	head;
-    XcursorImage	*image;
-    int			n;
-    uint32_t	*p;
+    XcursorChunkHeader chunkHeader;
+    XcursorImage head;
+    XcursorImage *image;
+    int n;
+    uint32_t *p;
 
     if (!file || !fileHeader)
         return NULL;
@@ -506,12 +506,12 @@ _XcursorReadImage(XcursorFile		*file,
 static XcursorImages *
 XcursorXcFileLoadImages(XcursorFile *file, int size)
 {
-    XcursorFileHeader	*fileHeader;
-    uint32_t		bestSize;
-    int			nsize;
-    XcursorImages	*images;
-    int			n;
-    int			toc;
+    XcursorFileHeader *fileHeader;
+    uint32_t bestSize;
+    int nsize;
+    XcursorImages *images;
+    int n;
+    int toc;
 
     if (!file || size < 0)
 	return NULL;
@@ -553,21 +553,21 @@ XcursorXcFileLoadImages(XcursorFile *file, int size)
 static int
 _XcursorStdioFileRead(XcursorFile *file, unsigned char *buf, int len)
 {
-    FILE    *f = file->closure;
+    FILE *f = file->closure;
     return fread(buf, 1, len, f);
 }
 
 static int
 _XcursorStdioFileWrite(XcursorFile *file, unsigned char *buf, int len)
 {
-    FILE    *f = file->closure;
+    FILE *f = file->closure;
     return fwrite(buf, 1, len, f);
 }
 
 static int
 _XcursorStdioFileSeek(XcursorFile *file, long offset, int whence)
 {
-    FILE    *f = file->closure;
+    FILE *f = file->closure;
     return fseek(f, offset, whence);
 }
 
@@ -583,7 +583,7 @@ _XcursorStdioFileInitialize(FILE *stdfile, XcursorFile *file)
 static XcursorImages *
 XcursorFileLoadImages(FILE *file, int size)
 {
-    XcursorFile	f;
+    XcursorFile f;
 
     if (!file)
         return NULL;
@@ -619,9 +619,9 @@ XcursorFileLoadImages(FILE *file, int size)
 static char *
 XcursorLibraryPath(void)
 {
-    const char		*env_var;
-    char		*path = NULL;
-    int		pathlen = 0;
+    const char *env_var;
+    char *path = NULL;
+    int pathlen = 0;
 
     env_var = getenv("XCURSOR_PATH");
     if (env_var)
@@ -648,7 +648,7 @@ XcursorLibraryPath(void)
 static  void
 _XcursorAddPathElt(char *path, const char *elt, int len)
 {
-    int	    pathlen = strlen(path);
+    int pathlen = strlen(path);
 
     /* append / if the path doesn't currently have one */
     if (path[0] == '\0' || path[pathlen - 1] != '/')
@@ -671,14 +671,14 @@ _XcursorAddPathElt(char *path, const char *elt, int len)
 static char *
 _XcursorBuildThemeDir(const char *dir, const char *theme)
 {
-    const char	    *colon;
-    const char	    *tcolon;
-    char	    *full;
-    char	    *home;
-    int		    dirlen;
-    int		    homelen;
-    int		    themelen;
-    int		    len;
+    const char *colon;
+    const char *tcolon;
+    char *full;
+    char *home;
+    int dirlen;
+    int homelen;
+    int themelen;
+    int len;
 
     if (!dir || !theme)
         return NULL;
@@ -728,7 +728,7 @@ _XcursorBuildThemeDir(const char *dir, const char *theme)
 static char *
 _XcursorBuildFullname(const char *dir, const char *subdir, const char *file)
 {
-    char    *full;
+    char *full;
 
     if (!dir || !subdir || !file)
         return NULL;
@@ -746,7 +746,7 @@ _XcursorBuildFullname(const char *dir, const char *subdir, const char *file)
 static const char *
 _XcursorNextPath(const char *path)
 {
-    char    *colon = strchr(path, ':');
+    char *colon = strchr(path, ':');
 
     if (!colon)
 	return NULL;
@@ -759,9 +759,9 @@ _XcursorNextPath(const char *path)
 static char *
 _XcursorThemeInherits(const char *full)
 {
-    char    line[8192];
-    char    *result = NULL;
-    FILE    *f;
+    char line[8192];
+    char *result = NULL;
+    FILE *f;
 
     if (!full)
         return NULL;
