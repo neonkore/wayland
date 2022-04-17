@@ -65,18 +65,6 @@
 #define XCURSOR_MAGIC	0x72756358  /* "Xcur" LSBFirst */
 
 /*
- * Current Xcursor version number.  Will be substituted by configure
- * from the version in the libXcursor configure.ac file.
- */
-
-#define XCURSOR_LIB_MAJOR 1
-#define XCURSOR_LIB_MINOR 1
-#define XCURSOR_LIB_REVISION 13
-#define XCURSOR_LIB_VERSION	((XCURSOR_LIB_MAJOR * 10000) + \
-				 (XCURSOR_LIB_MINOR * 100) + \
-				 (XCURSOR_LIB_REVISION))
-
-/*
  * This version number is stored in cursor files; changes to the
  * file format require updating this version number
  */
