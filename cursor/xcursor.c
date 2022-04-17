@@ -32,13 +32,6 @@
 #include <dirent.h>
 
 /*
- * From libXcursor/include/X11/extensions/Xcursor.h
- */
-
-#define XcursorTrue	1
-#define XcursorFalse	0
-
-/*
  * Cursor files start with a header.  The header
  * contains a magic number, a version number and a
  * table of contents which has type and offset information
@@ -283,16 +276,16 @@ _XcursorReadUInt (XcursorFile *file, uint32_t *u)
     unsigned char   bytes[4];
 
     if (!file || !u)
-        return XcursorFalse;
+        return false;
 
     if ((*file->read) (file, bytes, 4) != 4)
-	return XcursorFalse;
+	return false;
 
     *u = ((uint32_t)(bytes[0]) << 0) |
          ((uint32_t)(bytes[1]) << 8) |
          ((uint32_t)(bytes[2]) << 16) |
          ((uint32_t)(bytes[3]) << 24);
-    return XcursorTrue;
+    return true;
 }
 
 static void
@@ -375,8 +368,8 @@ _XcursorSeekToToc (XcursorFile		*file,
 {
     if (!file || !fileHeader || \
         (*file->seek) (file, fileHeader->tocs[toc].position, SEEK_SET) == EOF)
-	return XcursorFalse;
-    return XcursorTrue;
+	return false;
+    return true;
 }
 
 static bool
@@ -386,22 +379,22 @@ _XcursorFileReadChunkHeader (XcursorFile	*file,
 			     XcursorChunkHeader	*chunkHeader)
 {
     if (!file || !fileHeader || !chunkHeader)
-        return XcursorFalse;
+        return false;
     if (!_XcursorSeekToToc (file, fileHeader, toc))
-	return XcursorFalse;
+	return false;
     if (!_XcursorReadUInt (file, &chunkHeader->header))
-	return XcursorFalse;
+	return false;
     if (!_XcursorReadUInt (file, &chunkHeader->type))
-	return XcursorFalse;
+	return false;
     if (!_XcursorReadUInt (file, &chunkHeader->subtype))
-	return XcursorFalse;
+	return false;
     if (!_XcursorReadUInt (file, &chunkHeader->version))
-	return XcursorFalse;
+	return false;
     /* sanity check */
     if (chunkHeader->type != fileHeader->tocs[toc].type ||
 	chunkHeader->subtype != fileHeader->tocs[toc].subtype)
-	return XcursorFalse;
-    return XcursorTrue;
+	return false;
+    return true;
 }
 
 #define dist(a,b)   ((a) > (b) ? (a) - (b) : (b) - (a))
