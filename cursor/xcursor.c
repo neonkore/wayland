@@ -234,8 +234,7 @@ XcursorImagesDestroy(XcursorImages *images)
 
     for (n = 0; n < images->nimage; n++)
 	XcursorImageDestroy(images->images[n]);
-    if (images->name)
-	free(images->name);
+    free(images->name);
     free(images);
 }
 
@@ -253,8 +252,7 @@ XcursorImagesSetName(XcursorImages *images, const char *name)
 	return;
 
     strcpy(new, name);
-    if (images->name)
-	free(images->name);
+    free(images->name);
     images->name = new;
 }
 
@@ -911,8 +909,6 @@ xcursor_load_theme(const char *theme, int size,
 	for (i = inherits; i; i = _XcursorNextPath(i))
 		xcursor_load_theme(i, size, load_callback, user_data);
 
-	if (inherits)
-		free(inherits);
-
+	free(inherits);
 	free(xcursor_path);
 }
