@@ -62,17 +62,17 @@
  *	CARD32		position    absolute file position
  */
 
-#define XCURSOR_MAGIC	0x72756358  /* "Xcur" LSBFirst */
+#define XCURSOR_MAGIC 0x72756358 /* "Xcur" LSBFirst */
 
 /*
  * This version number is stored in cursor files; changes to the
  * file format require updating this version number
  */
-#define XCURSOR_FILE_MAJOR	1
-#define XCURSOR_FILE_MINOR	0
-#define XCURSOR_FILE_VERSION	((XCURSOR_FILE_MAJOR << 16) | (XCURSOR_FILE_MINOR))
-#define XCURSOR_FILE_HEADER_LEN	(4 * 4)
-#define XCURSOR_FILE_TOC_LEN	(3 * 4)
+#define XCURSOR_FILE_MAJOR 1
+#define XCURSOR_FILE_MINOR 0
+#define XCURSOR_FILE_VERSION ((XCURSOR_FILE_MAJOR << 16) | (XCURSOR_FILE_MINOR))
+#define XCURSOR_FILE_HEADER_LEN (4 * 4)
+#define XCURSOR_FILE_TOC_LEN (3 * 4)
 
 typedef struct _XcursorFileToc {
     uint32_t	    type;	/* chunk type */
@@ -104,7 +104,7 @@ typedef struct _XcursorFileHeader {
  *	CARD32	    version	chunk type version
  */
 
-#define XCURSOR_CHUNK_HEADER_LEN    (4 * 4)
+#define XCURSOR_CHUNK_HEADER_LEN (4 * 4)
 
 typedef struct _XcursorChunkHeader {
     uint32_t	    header;	/* bytes in chunk header */
@@ -127,13 +127,13 @@ typedef struct _XcursorChunkHeader {
  *	LISTofCARD8 text	UTF-8 encoded text
  */
 
-#define XCURSOR_COMMENT_TYPE	    0xfffe0001
-#define XCURSOR_COMMENT_VERSION	    1
-#define XCURSOR_COMMENT_HEADER_LEN  (XCURSOR_CHUNK_HEADER_LEN + (1 *4))
-#define XCURSOR_COMMENT_COPYRIGHT   1
-#define XCURSOR_COMMENT_LICENSE	    2
-#define XCURSOR_COMMENT_OTHER	    3
-#define XCURSOR_COMMENT_MAX_LEN	    0x100000
+#define XCURSOR_COMMENT_TYPE 0xfffe0001
+#define XCURSOR_COMMENT_VERSION 1
+#define XCURSOR_COMMENT_HEADER_LEN (XCURSOR_CHUNK_HEADER_LEN + (1 *4))
+#define XCURSOR_COMMENT_COPYRIGHT 1
+#define XCURSOR_COMMENT_LICENSE 2
+#define XCURSOR_COMMENT_OTHER 3
+#define XCURSOR_COMMENT_MAX_LEN 0x100000
 
 typedef struct _XcursorComment {
     uint32_t	    version;
@@ -157,10 +157,10 @@ typedef struct _XcursorComment {
  *	LISTofCARD32	pixels	ARGB pixels
  */
 
-#define XCURSOR_IMAGE_TYPE    	    0xfffd0002
-#define XCURSOR_IMAGE_VERSION	    1
-#define XCURSOR_IMAGE_HEADER_LEN    (XCURSOR_CHUNK_HEADER_LEN + (5*4))
-#define XCURSOR_IMAGE_MAX_SIZE	    0x7fff	/* 32767x32767 max cursor size */
+#define XCURSOR_IMAGE_TYPE 0xfffd0002
+#define XCURSOR_IMAGE_VERSION 1
+#define XCURSOR_IMAGE_HEADER_LEN (XCURSOR_CHUNK_HEADER_LEN + (5*4))
+#define XCURSOR_IMAGE_MAX_SIZE 0x7fff /* 32767x32767 max cursor size */
 
 typedef struct _XcursorFile XcursorFile;
 
