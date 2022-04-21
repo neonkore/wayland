@@ -274,7 +274,7 @@ load_fallback_theme(struct wl_cursor_theme *theme)
 }
 
 static struct wl_cursor *
-wl_cursor_create_from_xcursor_images(XcursorImages *images,
+wl_cursor_create_from_xcursor_images(struct xcursor_images *images,
 				     struct wl_cursor_theme *theme)
 {
 	struct cursor *cursor;
@@ -335,7 +335,7 @@ wl_cursor_create_from_xcursor_images(XcursorImages *images,
 }
 
 static void
-load_callback(XcursorImages *images, void *data)
+load_callback(struct xcursor_images *images, void *data)
 {
 	struct wl_cursor_theme *theme = data;
 	struct wl_cursor *cursor;

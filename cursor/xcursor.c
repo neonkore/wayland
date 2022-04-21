@@ -74,19 +74,19 @@
 #define XCURSOR_FILE_HEADER_LEN (4 * 4)
 #define XCURSOR_FILE_TOC_LEN (3 * 4)
 
-typedef struct _XcursorFileToc {
+struct xcursor_file_toc {
 	uint32_t type; /* chunk type */
 	uint32_t subtype; /* subtype (size for images) */
 	uint32_t position; /* absolute position in file */
-} XcursorFileToc;
+};
 
-typedef struct _XcursorFileHeader {
+struct xcursor_file_header {
 	uint32_t magic; /* magic number */
 	uint32_t header; /* byte length of header */
 	uint32_t version; /* file version number */
 	uint32_t ntoc; /* number of toc entries */
-	XcursorFileToc *tocs; /* table of contents */
-} XcursorFileHeader;
+	struct xcursor_file_toc *tocs; /* table of contents */
+};
 
 /*
  * The rest of the file is a list of chunks, each tagged by type
@@ -106,12 +106,12 @@ typedef struct _XcursorFileHeader {
 
 #define XCURSOR_CHUNK_HEADER_LEN (4 * 4)
 
-typedef struct _XcursorChunkHeader {
+struct xcursor_chunk_header {
 	uint32_t header; /* bytes in chunk header */
 	uint32_t type; /* chunk type */
 	uint32_t subtype; /* chunk subtype (size for images) */
 	uint32_t version; /* version of this type */
-} XcursorChunkHeader;
+};
 
 /*
  * Here's a list of the known chunk types
@@ -135,11 +135,11 @@ typedef struct _XcursorChunkHeader {
 #define XCURSOR_COMMENT_OTHER 3
 #define XCURSOR_COMMENT_MAX_LEN 0x100000
 
-typedef struct _XcursorComment {
+struct xcursor_comment {
 	uint32_t version;
 	uint32_t comment_type;
 	char *comment;
-} XcursorComment;
+};
 
 /*
  * Each cursor image occupies a separate image chunk.
@@ -162,35 +162,33 @@ typedef struct _XcursorComment {
 #define XCURSOR_IMAGE_HEADER_LEN (XCURSOR_CHUNK_HEADER_LEN + (5*4))
 #define XCURSOR_IMAGE_MAX_SIZE 0x7fff /* 32767x32767 max cursor size */
 
-typedef struct _XcursorFile XcursorFile;
-
-struct _XcursorFile {
+struct xcursor_file {
 	void *closure;
-	int (*read)(XcursorFile *file, unsigned char *buf, int len);
-	int (*write)(XcursorFile *file, unsigned char *buf, int len);
-	int (*seek)(XcursorFile *file, long offset, int whence);
+	int (*read)(struct xcursor_file *file, unsigned char *buf, int len);
+	int (*write)(struct xcursor_file *file, unsigned char *buf, int len);
+	int (*seek)(struct xcursor_file *file, long offset, int whence);
 };
 
-typedef struct _XcursorComments {
+struct xcursor_comments {
 	int ncomment; /* number of comments */
-	XcursorComment **comments; /* array of XcursorComment pointers */
-} XcursorComments;
+	struct xcursor_comments **comments; /* array of XcursorComment pointers */
+};
 
 /*
  * From libXcursor/src/file.c
  */
 
-static XcursorImage *
+static struct xcursor_image *
 XcursorImageCreate(int width, int height)
 {
-	XcursorImage *image;
+	struct xcursor_image *image;
 
 	if (width < 0 || height < 0)
 		return NULL;
 	if (width > XCURSOR_IMAGE_MAX_SIZE || height > XCURSOR_IMAGE_MAX_SIZE)
 		return NULL;
 
-	image = malloc(sizeof(XcursorImage) +
+	image = malloc(sizeof(struct xcursor_image) +
 		       width * height * sizeof(uint32_t));
 	if (!image)
 		return NULL;
@@ -204,28 +202,28 @@ XcursorImageCreate(int width, int height)
 }
 
 static void
-XcursorImageDestroy(XcursorImage *image)
+XcursorImageDestroy(struct xcursor_image *image)
 {
 	free(image);
 }
 
-static XcursorImages *
+static struct xcursor_images *
 XcursorImagesCreate(int size)
 {
-	XcursorImages *images;
+	struct xcursor_images *images;
 
-	images = malloc(sizeof(XcursorImages) +
-			size * sizeof(XcursorImage *));
+	images = malloc(sizeof(struct xcursor_images) +
+			size * sizeof(struct xcursor_image *));
 	if (!images)
 		return NULL;
 	images->nimage = 0;
-	images->images = (XcursorImage **) (images + 1);
+	images->images = (struct xcursor_image **) (images + 1);
 	images->name = NULL;
 	return images;
 }
 
 void
-XcursorImagesDestroy(XcursorImages *images)
+XcursorImagesDestroy(struct xcursor_images *images)
 {
 	int n;
 
@@ -239,7 +237,7 @@ XcursorImagesDestroy(XcursorImages *images)
 }
 
 static void
-XcursorImagesSetName(XcursorImages *images, const char *name)
+XcursorImagesSetName(struct xcursor_images *images, const char *name)
 {
 	char *new;
 
@@ -257,7 +255,7 @@ XcursorImagesSetName(XcursorImages *images, const char *name)
 }
 
 static bool
-_XcursorReadUInt(XcursorFile *file, uint32_t *u)
+_XcursorReadUInt(struct xcursor_file *file, uint32_t *u)
 {
 	unsigned char bytes[4];
 
@@ -275,34 +273,34 @@ _XcursorReadUInt(XcursorFile *file, uint32_t *u)
 }
 
 static void
-_XcursorFileHeaderDestroy(XcursorFileHeader *fileHeader)
+_XcursorFileHeaderDestroy(struct xcursor_file_header *fileHeader)
 {
 	free(fileHeader);
 }
 
-static XcursorFileHeader *
+static struct xcursor_file_header *
 _XcursorFileHeaderCreate(uint32_t ntoc)
 {
-	XcursorFileHeader *fileHeader;
+	struct xcursor_file_header *fileHeader;
 
 	if (ntoc > 0x10000)
 		return NULL;
-	fileHeader = malloc(sizeof(XcursorFileHeader) +
-			    ntoc * sizeof(XcursorFileToc));
+	fileHeader = malloc(sizeof(struct xcursor_file_header) +
+			    ntoc * sizeof(struct xcursor_file_toc));
 	if (!fileHeader)
 		return NULL;
 	fileHeader->magic = XCURSOR_MAGIC;
 	fileHeader->header = XCURSOR_FILE_HEADER_LEN;
 	fileHeader->version = XCURSOR_FILE_VERSION;
 	fileHeader->ntoc = ntoc;
-	fileHeader->tocs = (XcursorFileToc *) (fileHeader + 1);
+	fileHeader->tocs = (struct xcursor_file_toc *) (fileHeader + 1);
 	return fileHeader;
 }
 
-static XcursorFileHeader *
-_XcursorReadFileHeader(XcursorFile *file)
+static struct xcursor_file_header *
+_XcursorReadFileHeader(struct xcursor_file *file)
 {
-	XcursorFileHeader head, *fileHeader;
+	struct xcursor_file_header head, *fileHeader;
 	uint32_t skip;
 	unsigned int n;
 
@@ -346,8 +344,8 @@ _XcursorReadFileHeader(XcursorFile *file)
 }
 
 static bool
-_XcursorSeekToToc(XcursorFile		*file,
-		  XcursorFileHeader	*fileHeader,
+_XcursorSeekToToc(struct xcursor_file		*file,
+		  struct xcursor_file_header	*fileHeader,
 		  int			toc)
 {
 	if (!file || !fileHeader ||
@@ -357,10 +355,10 @@ _XcursorSeekToToc(XcursorFile		*file,
 }
 
 static bool
-_XcursorFileReadChunkHeader(XcursorFile	*file,
-				XcursorFileHeader	*fileHeader,
+_XcursorFileReadChunkHeader(struct xcursor_file	*file,
+				struct xcursor_file_header	*fileHeader,
 				int		toc,
-				XcursorChunkHeader	*chunkHeader)
+				struct xcursor_chunk_header	*chunkHeader)
 {
 	if (!file || !fileHeader || !chunkHeader)
 		return false;
@@ -384,7 +382,7 @@ _XcursorFileReadChunkHeader(XcursorFile	*file,
 #define dist(a,b)   ((a) > (b) ? (a) - (b) : (b) - (a))
 
 static uint32_t
-_XcursorFindBestSize(XcursorFileHeader *fileHeader,
+_XcursorFindBestSize(struct xcursor_file_header *fileHeader,
 			  uint32_t	size,
 			  int		*nsizesp)
 {
@@ -412,7 +410,7 @@ _XcursorFindBestSize(XcursorFileHeader *fileHeader,
 }
 
 static int
-_XcursorFindImageToc(XcursorFileHeader	*fileHeader,
+_XcursorFindImageToc(struct xcursor_file_header	*fileHeader,
 			 uint32_t	size,
 			 int		count)
 {
@@ -437,14 +435,14 @@ _XcursorFindImageToc(XcursorFileHeader	*fileHeader,
 	return toc;
 }
 
-static XcursorImage *
-_XcursorReadImage(XcursorFile		*file,
-		   XcursorFileHeader	*fileHeader,
+static struct xcursor_image *
+_XcursorReadImage(struct xcursor_file		*file,
+		   struct xcursor_file_header	*fileHeader,
 		   int			toc)
 {
-	XcursorChunkHeader chunkHeader;
-	XcursorImage head;
-	XcursorImage *image;
+	struct xcursor_chunk_header chunkHeader;
+	struct xcursor_image head;
+	struct xcursor_image *image;
 	int n;
 	uint32_t *p;
 
@@ -494,13 +492,13 @@ _XcursorReadImage(XcursorFile		*file,
 	return image;
 }
 
-static XcursorImages *
-XcursorXcFileLoadImages(XcursorFile *file, int size)
+static struct xcursor_images *
+XcursorXcFileLoadImages(struct xcursor_file *file, int size)
 {
-	XcursorFileHeader *fileHeader;
+	struct xcursor_file_header *fileHeader;
 	uint32_t bestSize;
 	int nsize;
-	XcursorImages *images;
+	struct xcursor_images *images;
 	int n;
 	int toc;
 
@@ -538,28 +536,28 @@ XcursorXcFileLoadImages(XcursorFile *file, int size)
 }
 
 static int
-_XcursorStdioFileRead(XcursorFile *file, unsigned char *buf, int len)
+_XcursorStdioFileRead(struct xcursor_file *file, unsigned char *buf, int len)
 {
 	FILE *f = file->closure;
 	return fread(buf, 1, len, f);
 }
 
 static int
-_XcursorStdioFileWrite(XcursorFile *file, unsigned char *buf, int len)
+_XcursorStdioFileWrite(struct xcursor_file *file, unsigned char *buf, int len)
 {
 	FILE *f = file->closure;
 	return fwrite(buf, 1, len, f);
 }
 
 static int
-_XcursorStdioFileSeek(XcursorFile *file, long offset, int whence)
+_XcursorStdioFileSeek(struct xcursor_file *file, long offset, int whence)
 {
 	FILE *f = file->closure;
 	return fseek(f, offset, whence);
 }
 
 static void
-_XcursorStdioFileInitialize(FILE *stdfile, XcursorFile *file)
+_XcursorStdioFileInitialize(FILE *stdfile, struct xcursor_file *file)
 {
 	file->closure = stdfile;
 	file->read = _XcursorStdioFileRead;
@@ -567,10 +565,10 @@ _XcursorStdioFileInitialize(FILE *stdfile, XcursorFile *file)
 	file->seek = _XcursorStdioFileSeek;
 }
 
-static XcursorImages *
+static struct xcursor_images *
 XcursorFileLoadImages(FILE *file, int size)
 {
-	XcursorFile f;
+	struct xcursor_file f;
 
 	if (!file)
 		return NULL;
@@ -784,14 +782,14 @@ _XcursorThemeInherits(const char *full)
 
 static void
 load_all_cursors_from_dir(const char *path, int size,
-			  void (*load_callback)(XcursorImages *, void *),
+			  void (*load_callback)(struct xcursor_images *, void *),
 			  void *user_data)
 {
 	FILE *f;
 	DIR *dir = opendir(path);
 	struct dirent *ent;
 	char *full;
-	XcursorImages *images;
+	struct xcursor_images *images;
 
 	if (!dir)
 		return;
@@ -830,25 +828,25 @@ load_all_cursors_from_dir(const char *path, int size,
 /** Load all the cursor of a theme
  *
  * This function loads all the cursor images of a given theme and its
- * inherited themes. Each cursor is loaded into an XcursorImages object
+ * inherited themes. Each cursor is loaded into an struct xcursor_images object
  * which is passed to the caller's load callback. If a cursor appears
  * more than once across all the inherited themes, the load callback
- * will be called multiple times, with possibly different XcursorImages
+ * will be called multiple times, with possibly different struct xcursor_images
  * object which have the same name. The user is expected to destroy the
- * XcursorImages objects passed to the callback with
+ * struct xcursor_images objects passed to the callback with
  * XcursorImagesDestroy().
  *
  * \param theme The name of theme that should be loaded
  * \param size The desired size of the cursor images
  * \param load_callback A callback function that will be called
- * for each cursor loaded. The first parameter is the XcursorImages
+ * for each cursor loaded. The first parameter is the struct xcursor_images
  * object representing the loaded cursor and the second is a pointer
  * to data provided by the user.
  * \param user_data The data that should be passed to the load callback
  */
 void
 xcursor_load_theme(const char *theme, int size,
-			void (*load_callback)(XcursorImages *, void *),
+			void (*load_callback)(struct xcursor_images *, void *),
 			void *user_data)
 {
 	char *full, *dir;

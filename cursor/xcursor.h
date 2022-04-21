@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-typedef struct _XcursorImage {
+struct xcursor_image {
 	uint32_t version; /* version of the image data */
 	uint32_t size; /* nominal size for matching */
 	uint32_t width; /* actual width */
@@ -37,22 +37,22 @@ typedef struct _XcursorImage {
 	uint32_t yhot; /* hot spot y (must be inside image) */
 	uint32_t delay; /* animation delay to next frame (ms) */
 	uint32_t *pixels; /* pointer to pixels */
-} XcursorImage;
+};
 
 /*
  * Other data structures exposed by the library API
  */
-typedef struct _XcursorImages {
+struct xcursor_images {
 	int nimage; /* number of images */
-	XcursorImage **images; /* array of XcursorImage pointers */
+	struct xcursor_image **images; /* array of XcursorImage pointers */
 	char *name; /* name used to load images */
-} XcursorImages;
+};
 
 void
-XcursorImagesDestroy(XcursorImages *images);
+XcursorImagesDestroy(struct xcursor_images *images);
 
 void
 xcursor_load_theme(const char *theme, int size,
-		   void (*load_callback)(XcursorImages *, void *),
+		   void (*load_callback)(struct xcursor_images *, void *),
 		   void *user_data);
 #endif
