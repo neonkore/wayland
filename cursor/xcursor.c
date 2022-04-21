@@ -162,13 +162,6 @@ struct xcursor_comment {
 #define XCURSOR_IMAGE_HEADER_LEN (XCURSOR_CHUNK_HEADER_LEN + (5*4))
 #define XCURSOR_IMAGE_MAX_SIZE 0x7fff /* 32767x32767 max cursor size */
 
-struct xcursor_file {
-	void *closure;
-	int (*read)(struct xcursor_file *file, unsigned char *buf, int len);
-	int (*write)(struct xcursor_file *file, unsigned char *buf, int len);
-	int (*seek)(struct xcursor_file *file, long offset, int whence);
-};
-
 struct xcursor_comments {
 	int ncomment; /* number of comments */
 	struct xcursor_comments **comments; /* array of XcursorComment pointers */
@@ -255,14 +248,14 @@ xcursor_images_set_name(struct xcursor_images *images, const char *name)
 }
 
 static bool
-xcursor_read_uint(struct xcursor_file *file, uint32_t *u)
+xcursor_read_uint(FILE *file, uint32_t *u)
 {
 	unsigned char bytes[4];
 
 	if (!file || !u)
 		return false;
 
-	if ((*file->read)(file, bytes, 4) != 4)
+	if (fread(bytes, 1, 4, file) != 4)
 		return false;
 
 	*u = ((uint32_t)(bytes[0]) << 0) |
@@ -298,7 +291,7 @@ xcursor_file_header_create(uint32_t ntoc)
 }
 
 static struct xcursor_file_header *
-xcursor_read_file_header(struct xcursor_file *file)
+xcursor_read_file_header(FILE *file)
 {
 	struct xcursor_file_header head, *fileHeader;
 	uint32_t skip;
@@ -319,7 +312,7 @@ xcursor_read_file_header(struct xcursor_file *file)
 		return NULL;
 	skip = head.header - XCURSOR_FILE_HEADER_LEN;
 	if (skip)
-		if ((*file->seek)(file, skip, SEEK_CUR) == EOF)
+		if (fseek(file, skip, SEEK_CUR) == EOF)
 			return NULL;
 	fileHeader = xcursor_file_header_create(head.ntoc);
 	if (!fileHeader)
@@ -344,18 +337,18 @@ xcursor_read_file_header(struct xcursor_file *file)
 }
 
 static bool
-xcursor_seek_to_toc(struct xcursor_file *file,
+xcursor_seek_to_toc(FILE *file,
 		    struct xcursor_file_header *fileHeader,
 		    int toc)
 {
 	if (!file || !fileHeader ||
-	    (*file->seek)(file, fileHeader->tocs[toc].position, SEEK_SET) == EOF)
+	    fseek(file, fileHeader->tocs[toc].position, SEEK_SET) == EOF)
 		return false;
 	return true;
 }
 
 static bool
-xcursor_file_read_chunk_header(struct xcursor_file *file,
+xcursor_file_read_chunk_header(FILE *file,
 			       struct xcursor_file_header *fileHeader,
 			       int toc,
 			       struct xcursor_chunk_header *chunkHeader)
@@ -438,7 +431,7 @@ xcursor_find_image_toc(struct xcursor_file_header *fileHeader,
 }
 
 static struct xcursor_image *
-xcursor_read_image(struct xcursor_file *file,
+xcursor_read_image(FILE *file,
 		   struct xcursor_file_header *fileHeader,
 		   int toc)
 {
@@ -495,7 +488,7 @@ xcursor_read_image(struct xcursor_file *file,
 }
 
 static struct xcursor_images *
-xcursor_xc_file_load_images(struct xcursor_file *file, int size)
+xcursor_xc_file_load_images(FILE *file, int size)
 {
 	struct xcursor_file_header *fileHeader;
 	uint32_t bestSize;
@@ -537,46 +530,13 @@ xcursor_xc_file_load_images(struct xcursor_file *file, int size)
 	return images;
 }
 
-static int
-xcursor_stdio_file_read(struct xcursor_file *file, unsigned char *buf, int len)
-{
-	FILE *f = file->closure;
-	return fread(buf, 1, len, f);
-}
-
-static int
-xcursor_stdio_file_write(struct xcursor_file *file, unsigned char *buf, int len)
-{
-	FILE *f = file->closure;
-	return fwrite(buf, 1, len, f);
-}
-
-static int
-xcursor_stdio_file_seek(struct xcursor_file *file, long offset, int whence)
-{
-	FILE *f = file->closure;
-	return fseek(f, offset, whence);
-}
-
-static void
-xcursor_stdio_file_initialize(FILE *stdfile, struct xcursor_file *file)
-{
-	file->closure = stdfile;
-	file->read = xcursor_stdio_file_read;
-	file->write = xcursor_stdio_file_write;
-	file->seek = xcursor_stdio_file_seek;
-}
-
 static struct xcursor_images *
 xcursor_file_load_images(FILE *file, int size)
 {
-	struct xcursor_file f;
-
 	if (!file)
 		return NULL;
 
-	xcursor_stdio_file_initialize(file, &f);
-	return xcursor_xc_file_load_images(&f, size);
+	return xcursor_xc_file_load_images(file, size);
 }
 
 /*
