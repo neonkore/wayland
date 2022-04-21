@@ -379,7 +379,11 @@ xcursor_file_read_chunk_header(struct xcursor_file *file,
 	return true;
 }
 
-#define dist(a,b)   ((a) > (b) ? (a) - (b) : (b) - (a))
+static uint32_t
+dist(uint32_t a, uint32_t b)
+{
+	return a > b ? a - b : b - a;
+}
 
 static uint32_t
 xcursor_file_best_size(struct xcursor_file_header *fileHeader,
@@ -728,8 +732,17 @@ xcursor_next_path(const char *path)
 	return colon + 1;
 }
 
-#define xcursor_white(c)	((c) == ' ' || (c) == '\t' || (c) == '\n')
-#define xcursor_sep(c) ((c) == ';' || (c) == ',')
+static bool
+xcursor_white(char c)
+{
+	return c == ' ' || c == '\t' || c == '\n';
+}
+
+static bool
+xcursor_sep(char c)
+{
+	return c == ';' || c == ',';
+}
 
 static char *
 xcursor_theme_inherits(const char *full)
