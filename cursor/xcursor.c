@@ -179,7 +179,7 @@ struct xcursor_comments {
  */
 
 static struct xcursor_image *
-XcursorImageCreate(int width, int height)
+xcursor_image_create(int width, int height)
 {
 	struct xcursor_image *image;
 
@@ -202,13 +202,13 @@ XcursorImageCreate(int width, int height)
 }
 
 static void
-XcursorImageDestroy(struct xcursor_image *image)
+xcursor_image_destroy(struct xcursor_image *image)
 {
 	free(image);
 }
 
 static struct xcursor_images *
-XcursorImagesCreate(int size)
+xcursor_images_create(int size)
 {
 	struct xcursor_images *images;
 
@@ -223,7 +223,7 @@ XcursorImagesCreate(int size)
 }
 
 void
-XcursorImagesDestroy(struct xcursor_images *images)
+xcursor_images_destroy(struct xcursor_images *images)
 {
 	int n;
 
@@ -231,13 +231,13 @@ XcursorImagesDestroy(struct xcursor_images *images)
 		return;
 
 	for (n = 0; n < images->nimage; n++)
-		XcursorImageDestroy(images->images[n]);
+		xcursor_image_destroy(images->images[n]);
 	free(images->name);
 	free(images);
 }
 
 static void
-XcursorImagesSetName(struct xcursor_images *images, const char *name)
+xcursor_images_set_name(struct xcursor_images *images, const char *name)
 {
 	char *new;
 
@@ -255,7 +255,7 @@ XcursorImagesSetName(struct xcursor_images *images, const char *name)
 }
 
 static bool
-_XcursorReadUInt(struct xcursor_file *file, uint32_t *u)
+xcursor_read_uint(struct xcursor_file *file, uint32_t *u)
 {
 	unsigned char bytes[4];
 
@@ -273,13 +273,13 @@ _XcursorReadUInt(struct xcursor_file *file, uint32_t *u)
 }
 
 static void
-_XcursorFileHeaderDestroy(struct xcursor_file_header *fileHeader)
+xcursor_file_header_destroy(struct xcursor_file_header *fileHeader)
 {
 	free(fileHeader);
 }
 
 static struct xcursor_file_header *
-_XcursorFileHeaderCreate(uint32_t ntoc)
+xcursor_file_header_create(uint32_t ntoc)
 {
 	struct xcursor_file_header *fileHeader;
 
@@ -298,7 +298,7 @@ _XcursorFileHeaderCreate(uint32_t ntoc)
 }
 
 static struct xcursor_file_header *
-_XcursorReadFileHeader(struct xcursor_file *file)
+xcursor_read_file_header(struct xcursor_file *file)
 {
 	struct xcursor_file_header head, *fileHeader;
 	uint32_t skip;
@@ -307,21 +307,21 @@ _XcursorReadFileHeader(struct xcursor_file *file)
 	if (!file)
 		return NULL;
 
-	if (!_XcursorReadUInt(file, &head.magic))
+	if (!xcursor_read_uint(file, &head.magic))
 		return NULL;
 	if (head.magic != XCURSOR_MAGIC)
 		return NULL;
-	if (!_XcursorReadUInt(file, &head.header))
+	if (!xcursor_read_uint(file, &head.header))
 		return NULL;
-	if (!_XcursorReadUInt(file, &head.version))
+	if (!xcursor_read_uint(file, &head.version))
 		return NULL;
-	if (!_XcursorReadUInt(file, &head.ntoc))
+	if (!xcursor_read_uint(file, &head.ntoc))
 		return NULL;
 	skip = head.header - XCURSOR_FILE_HEADER_LEN;
 	if (skip)
 		if ((*file->seek)(file, skip, SEEK_CUR) == EOF)
 			return NULL;
-	fileHeader = _XcursorFileHeaderCreate(head.ntoc);
+	fileHeader = xcursor_file_header_create(head.ntoc);
 	if (!fileHeader)
 		return NULL;
 	fileHeader->magic = head.magic;
@@ -329,24 +329,24 @@ _XcursorReadFileHeader(struct xcursor_file *file)
 	fileHeader->version = head.version;
 	fileHeader->ntoc = head.ntoc;
 	for (n = 0; n < fileHeader->ntoc; n++) {
-		if (!_XcursorReadUInt(file, &fileHeader->tocs[n].type))
+		if (!xcursor_read_uint(file, &fileHeader->tocs[n].type))
 			break;
-		if (!_XcursorReadUInt(file, &fileHeader->tocs[n].subtype))
+		if (!xcursor_read_uint(file, &fileHeader->tocs[n].subtype))
 			break;
-		if (!_XcursorReadUInt(file, &fileHeader->tocs[n].position))
+		if (!xcursor_read_uint(file, &fileHeader->tocs[n].position))
 			break;
 	}
 	if (n != fileHeader->ntoc) {
-		_XcursorFileHeaderDestroy(fileHeader);
+		xcursor_file_header_destroy(fileHeader);
 		return NULL;
 	}
 	return fileHeader;
 }
 
 static bool
-_XcursorSeekToToc(struct xcursor_file *file,
-		  struct xcursor_file_header *fileHeader,
-		  int toc)
+xcursor_seek_to_toc(struct xcursor_file *file,
+		    struct xcursor_file_header *fileHeader,
+		    int toc)
 {
 	if (!file || !fileHeader ||
 	    (*file->seek)(file, fileHeader->tocs[toc].position, SEEK_SET) == EOF)
@@ -355,22 +355,22 @@ _XcursorSeekToToc(struct xcursor_file *file,
 }
 
 static bool
-_XcursorFileReadChunkHeader(struct xcursor_file *file,
-			    struct xcursor_file_header *fileHeader,
-			    int toc,
-			    struct xcursor_chunk_header *chunkHeader)
+xcursor_file_read_chunk_header(struct xcursor_file *file,
+			       struct xcursor_file_header *fileHeader,
+			       int toc,
+			       struct xcursor_chunk_header *chunkHeader)
 {
 	if (!file || !fileHeader || !chunkHeader)
 		return false;
-	if (!_XcursorSeekToToc(file, fileHeader, toc))
+	if (!xcursor_seek_to_toc(file, fileHeader, toc))
 		return false;
-	if (!_XcursorReadUInt(file, &chunkHeader->header))
+	if (!xcursor_read_uint(file, &chunkHeader->header))
 		return false;
-	if (!_XcursorReadUInt(file, &chunkHeader->type))
+	if (!xcursor_read_uint(file, &chunkHeader->type))
 		return false;
-	if (!_XcursorReadUInt(file, &chunkHeader->subtype))
+	if (!xcursor_read_uint(file, &chunkHeader->subtype))
 		return false;
-	if (!_XcursorReadUInt(file, &chunkHeader->version))
+	if (!xcursor_read_uint(file, &chunkHeader->version))
 		return false;
 	/* sanity check */
 	if (chunkHeader->type != fileHeader->tocs[toc].type ||
@@ -382,8 +382,8 @@ _XcursorFileReadChunkHeader(struct xcursor_file *file,
 #define dist(a,b)   ((a) > (b) ? (a) - (b) : (b) - (a))
 
 static uint32_t
-_XcursorFindBestSize(struct xcursor_file_header *fileHeader,
-		     uint32_t size, int *nsizesp)
+xcursor_file_best_size(struct xcursor_file_header *fileHeader,
+		       uint32_t size, int *nsizesp)
 {
 	unsigned int n;
 	int nsizes = 0;
@@ -409,8 +409,8 @@ _XcursorFindBestSize(struct xcursor_file_header *fileHeader,
 }
 
 static int
-_XcursorFindImageToc(struct xcursor_file_header *fileHeader,
-		     uint32_t size, int count)
+xcursor_find_image_toc(struct xcursor_file_header *fileHeader,
+		       uint32_t size, int count)
 {
 	unsigned int toc;
 	uint32_t thisSize;
@@ -434,9 +434,9 @@ _XcursorFindImageToc(struct xcursor_file_header *fileHeader,
 }
 
 static struct xcursor_image *
-_XcursorReadImage(struct xcursor_file *file,
-		  struct xcursor_file_header *fileHeader,
-		  int toc)
+xcursor_read_image(struct xcursor_file *file,
+		   struct xcursor_file_header *fileHeader,
+		   int toc)
 {
 	struct xcursor_chunk_header chunkHeader;
 	struct xcursor_image head;
@@ -447,17 +447,17 @@ _XcursorReadImage(struct xcursor_file *file,
 	if (!file || !fileHeader)
 		return NULL;
 
-	if (!_XcursorFileReadChunkHeader(file, fileHeader, toc, &chunkHeader))
+	if (!xcursor_file_read_chunk_header(file, fileHeader, toc, &chunkHeader))
 		return NULL;
-	if (!_XcursorReadUInt(file, &head.width))
+	if (!xcursor_read_uint(file, &head.width))
 		return NULL;
-	if (!_XcursorReadUInt(file, &head.height))
+	if (!xcursor_read_uint(file, &head.height))
 		return NULL;
-	if (!_XcursorReadUInt(file, &head.xhot))
+	if (!xcursor_read_uint(file, &head.xhot))
 		return NULL;
-	if (!_XcursorReadUInt(file, &head.yhot))
+	if (!xcursor_read_uint(file, &head.yhot))
 		return NULL;
-	if (!_XcursorReadUInt(file, &head.delay))
+	if (!xcursor_read_uint(file, &head.delay))
 		return NULL;
 	/* sanity check data */
 	if (head.width > XCURSOR_IMAGE_MAX_SIZE ||
@@ -469,7 +469,7 @@ _XcursorReadImage(struct xcursor_file *file,
 		return NULL;
 
 	/* Create the image and initialize it */
-	image = XcursorImageCreate(head.width, head.height);
+	image = xcursor_image_create(head.width, head.height);
 	if (image == NULL)
 		return NULL;
 	if (chunkHeader.version < image->version)
@@ -481,8 +481,8 @@ _XcursorReadImage(struct xcursor_file *file,
 	n = image->width * image->height;
 	p = image->pixels;
 	while (n--) {
-		if (!_XcursorReadUInt(file, p)) {
-			XcursorImageDestroy(image);
+		if (!xcursor_read_uint(file, p)) {
+			xcursor_image_destroy(image);
 			return NULL;
 		}
 		p++;
@@ -491,7 +491,7 @@ _XcursorReadImage(struct xcursor_file *file,
 }
 
 static struct xcursor_images *
-XcursorXcFileLoadImages(struct xcursor_file *file, int size)
+xcursor_xc_file_load_images(struct xcursor_file *file, int size)
 {
 	struct xcursor_file_header *fileHeader;
 	uint32_t bestSize;
@@ -502,77 +502,77 @@ XcursorXcFileLoadImages(struct xcursor_file *file, int size)
 
 	if (!file || size < 0)
 		return NULL;
-	fileHeader = _XcursorReadFileHeader(file);
+	fileHeader = xcursor_read_file_header(file);
 	if (!fileHeader)
 		return NULL;
-	bestSize = _XcursorFindBestSize(fileHeader, (uint32_t) size, &nsize);
+	bestSize = xcursor_file_best_size(fileHeader, (uint32_t) size, &nsize);
 	if (!bestSize) {
-		_XcursorFileHeaderDestroy(fileHeader);
+		xcursor_file_header_destroy(fileHeader);
 		return NULL;
 	}
-	images = XcursorImagesCreate(nsize);
+	images = xcursor_images_create(nsize);
 	if (!images) {
-		_XcursorFileHeaderDestroy(fileHeader);
+		xcursor_file_header_destroy(fileHeader);
 		return NULL;
 	}
 	for (n = 0; n < nsize; n++) {
-		toc = _XcursorFindImageToc(fileHeader, bestSize, n);
+		toc = xcursor_find_image_toc(fileHeader, bestSize, n);
 		if (toc < 0)
 			break;
-		images->images[images->nimage] = _XcursorReadImage(file, fileHeader,
-								   toc);
+		images->images[images->nimage] = xcursor_read_image(file, fileHeader,
+								    toc);
 		if (!images->images[images->nimage])
 			break;
 		images->nimage++;
 	}
-	_XcursorFileHeaderDestroy(fileHeader);
+	xcursor_file_header_destroy(fileHeader);
 	if (images->nimage != nsize) {
-		XcursorImagesDestroy(images);
+		xcursor_images_destroy(images);
 		images = NULL;
 	}
 	return images;
 }
 
 static int
-_XcursorStdioFileRead(struct xcursor_file *file, unsigned char *buf, int len)
+xcursor_stdio_file_read(struct xcursor_file *file, unsigned char *buf, int len)
 {
 	FILE *f = file->closure;
 	return fread(buf, 1, len, f);
 }
 
 static int
-_XcursorStdioFileWrite(struct xcursor_file *file, unsigned char *buf, int len)
+xcursor_stdio_file_write(struct xcursor_file *file, unsigned char *buf, int len)
 {
 	FILE *f = file->closure;
 	return fwrite(buf, 1, len, f);
 }
 
 static int
-_XcursorStdioFileSeek(struct xcursor_file *file, long offset, int whence)
+xcursor_stdio_file_seek(struct xcursor_file *file, long offset, int whence)
 {
 	FILE *f = file->closure;
 	return fseek(f, offset, whence);
 }
 
 static void
-_XcursorStdioFileInitialize(FILE *stdfile, struct xcursor_file *file)
+xcursor_stdio_file_initialize(FILE *stdfile, struct xcursor_file *file)
 {
 	file->closure = stdfile;
-	file->read = _XcursorStdioFileRead;
-	file->write = _XcursorStdioFileWrite;
-	file->seek = _XcursorStdioFileSeek;
+	file->read = xcursor_stdio_file_read;
+	file->write = xcursor_stdio_file_write;
+	file->seek = xcursor_stdio_file_seek;
 }
 
 static struct xcursor_images *
-XcursorFileLoadImages(FILE *file, int size)
+xcursor_file_load_images(FILE *file, int size)
 {
 	struct xcursor_file f;
 
 	if (!file)
 		return NULL;
 
-	_XcursorStdioFileInitialize(file, &f);
-	return XcursorXcFileLoadImages(&f, size);
+	xcursor_stdio_file_initialize(file, &f);
+	return xcursor_xc_file_load_images(&f, size);
 }
 
 /*
@@ -600,7 +600,7 @@ XcursorFileLoadImages(FILE *file, int size)
  * and must be freed by the caller.
  */
 static char *
-XcursorLibraryPath(void)
+xcursor_library_path(void)
 {
 	const char *env_var;
 	char *path = NULL;
@@ -624,7 +624,7 @@ XcursorLibraryPath(void)
 }
 
 static  void
-_XcursorAddPathElt(char *path, const char *elt, int len)
+xcursor_add_path_elt(char *path, const char *elt, int len)
 {
 	int pathlen = strlen(path);
 
@@ -645,7 +645,7 @@ _XcursorAddPathElt(char *path, const char *elt, int len)
 }
 
 static char *
-_XcursorBuildThemeDir(const char *dir, const char *theme)
+xcursor_build_theme_dir(const char *dir, const char *theme)
 {
 	const char *colon;
 	const char *tcolon;
@@ -694,14 +694,14 @@ _XcursorBuildThemeDir(const char *dir, const char *theme)
 	full[0] = '\0';
 
 	if (home)
-		_XcursorAddPathElt(full, home, -1);
-	_XcursorAddPathElt(full, dir, dirlen);
-	_XcursorAddPathElt(full, theme, themelen);
+		xcursor_add_path_elt(full, home, -1);
+	xcursor_add_path_elt(full, dir, dirlen);
+	xcursor_add_path_elt(full, theme, themelen);
 	return full;
 }
 
 static char *
-_XcursorBuildFullname(const char *dir, const char *subdir, const char *file)
+xcursor_build_fullname(const char *dir, const char *subdir, const char *file)
 {
 	char *full;
 
@@ -712,14 +712,14 @@ _XcursorBuildFullname(const char *dir, const char *subdir, const char *file)
 	if (!full)
 		return NULL;
 	full[0] = '\0';
-	_XcursorAddPathElt(full, dir, -1);
-	_XcursorAddPathElt(full, subdir, -1);
-	_XcursorAddPathElt(full, file, -1);
+	xcursor_add_path_elt(full, dir, -1);
+	xcursor_add_path_elt(full, subdir, -1);
+	xcursor_add_path_elt(full, file, -1);
 	return full;
 }
 
 static const char *
-_XcursorNextPath(const char *path)
+xcursor_next_path(const char *path)
 {
 	char *colon = strchr(path, ':');
 
@@ -728,11 +728,11 @@ _XcursorNextPath(const char *path)
 	return colon + 1;
 }
 
-#define XcursorWhite(c)	((c) == ' ' || (c) == '\t' || (c) == '\n')
-#define XcursorSep(c) ((c) == ';' || (c) == ',')
+#define xcursor_white(c)	((c) == ' ' || (c) == '\t' || (c) == '\n')
+#define xcursor_sep(c) ((c) == ';' || (c) == ',')
 
 static char *
-_XcursorThemeInherits(const char *full)
+xcursor_theme_inherits(const char *full)
 {
 	char line[8192];
 	char *result = NULL;
@@ -758,14 +758,14 @@ _XcursorThemeInherits(const char *full)
 				if (result) {
 					r = result;
 					while (*l) {
-						while (XcursorSep(*l) || XcursorWhite(*l))
+						while (xcursor_sep(*l) || xcursor_white(*l))
 							l++;
 						if (!*l)
 							break;
 						if (r != result)
 							*r++ = ':';
-						while (*l && !XcursorWhite(*l) &&
-						       !XcursorSep(*l))
+						while (*l && !xcursor_white(*l) &&
+						       !xcursor_sep(*l))
 							*r++ = *l++;
 					}
 					*r++ = '\0';
@@ -799,7 +799,7 @@ load_all_cursors_from_dir(const char *path, int size,
 			continue;
 #endif
 
-		full = _XcursorBuildFullname(path, "", ent->d_name);
+		full = xcursor_build_fullname(path, "", ent->d_name);
 		if (!full)
 			continue;
 
@@ -809,10 +809,10 @@ load_all_cursors_from_dir(const char *path, int size,
 			continue;
 		}
 
-		images = XcursorFileLoadImages(f, size);
+		images = xcursor_file_load_images(f, size);
 
 		if (images) {
-			XcursorImagesSetName(images, ent->d_name);
+			xcursor_images_set_name(images, ent->d_name);
 			load_callback(images, user_data);
 		}
 
@@ -832,7 +832,7 @@ load_all_cursors_from_dir(const char *path, int size,
  * will be called multiple times, with possibly different struct xcursor_images
  * object which have the same name. The user is expected to destroy the
  * struct xcursor_images objects passed to the callback with
- * XcursorImagesDestroy().
+ * xcursor_images_destroy().
  *
  * \param theme The name of theme that should be loaded
  * \param size The desired size of the cursor images
@@ -855,15 +855,15 @@ xcursor_load_theme(const char *theme, int size,
 	if (!theme)
 		theme = "default";
 
-	xcursor_path = XcursorLibraryPath();
+	xcursor_path = xcursor_library_path();
 	for (path = xcursor_path;
 	     path;
-	     path = _XcursorNextPath(path)) {
-		dir = _XcursorBuildThemeDir(path, theme);
+	     path = xcursor_next_path(path)) {
+		dir = xcursor_build_theme_dir(path, theme);
 		if (!dir)
 			continue;
 
-		full = _XcursorBuildFullname(dir, "cursors", "");
+		full = xcursor_build_fullname(dir, "cursors", "");
 
 		if (full) {
 			load_all_cursors_from_dir(full, size, load_callback,
@@ -872,9 +872,9 @@ xcursor_load_theme(const char *theme, int size,
 		}
 
 		if (!inherits) {
-			full = _XcursorBuildFullname(dir, "", "index.theme");
+			full = xcursor_build_fullname(dir, "", "index.theme");
 			if (full) {
-				inherits = _XcursorThemeInherits(full);
+				inherits = xcursor_theme_inherits(full);
 				free(full);
 			}
 		}
@@ -882,7 +882,7 @@ xcursor_load_theme(const char *theme, int size,
 		free(dir);
 	}
 
-	for (i = inherits; i; i = _XcursorNextPath(i))
+	for (i = inherits; i; i = xcursor_next_path(i))
 		xcursor_load_theme(i, size, load_callback, user_data);
 
 	free(inherits);

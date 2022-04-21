@@ -341,7 +341,7 @@ load_callback(struct xcursor_images *images, void *data)
 	struct wl_cursor *cursor;
 
 	if (wl_cursor_theme_get_cursor(theme, images->name)) {
-		XcursorImagesDestroy(images);
+		xcursor_images_destroy(images);
 		return;
 	}
 
@@ -361,7 +361,7 @@ load_callback(struct xcursor_images *images, void *data)
 		}
 	}
 
-	XcursorImagesDestroy(images);
+	xcursor_images_destroy(images);
 }
 
 /** Load a cursor theme to memory shared with the compositor

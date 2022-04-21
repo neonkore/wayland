@@ -49,7 +49,7 @@ struct xcursor_images {
 };
 
 void
-XcursorImagesDestroy(struct xcursor_images *images);
+xcursor_images_destroy(struct xcursor_images *images);
 
 void
 xcursor_load_theme(const char *theme, int size,
