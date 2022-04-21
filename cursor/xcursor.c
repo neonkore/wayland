@@ -344,9 +344,9 @@ _XcursorReadFileHeader(struct xcursor_file *file)
 }
 
 static bool
-_XcursorSeekToToc(struct xcursor_file		*file,
-		  struct xcursor_file_header	*fileHeader,
-		  int			toc)
+_XcursorSeekToToc(struct xcursor_file *file,
+		  struct xcursor_file_header *fileHeader,
+		  int toc)
 {
 	if (!file || !fileHeader ||
 	    (*file->seek)(file, fileHeader->tocs[toc].position, SEEK_SET) == EOF)
@@ -355,10 +355,10 @@ _XcursorSeekToToc(struct xcursor_file		*file,
 }
 
 static bool
-_XcursorFileReadChunkHeader(struct xcursor_file	*file,
-				struct xcursor_file_header	*fileHeader,
-				int		toc,
-				struct xcursor_chunk_header	*chunkHeader)
+_XcursorFileReadChunkHeader(struct xcursor_file *file,
+			    struct xcursor_file_header *fileHeader,
+			    int toc,
+			    struct xcursor_chunk_header *chunkHeader)
 {
 	if (!file || !fileHeader || !chunkHeader)
 		return false;
@@ -383,8 +383,7 @@ _XcursorFileReadChunkHeader(struct xcursor_file	*file,
 
 static uint32_t
 _XcursorFindBestSize(struct xcursor_file_header *fileHeader,
-			  uint32_t	size,
-			  int		*nsizesp)
+		     uint32_t size, int *nsizesp)
 {
 	unsigned int n;
 	int nsizes = 0;
@@ -410,9 +409,8 @@ _XcursorFindBestSize(struct xcursor_file_header *fileHeader,
 }
 
 static int
-_XcursorFindImageToc(struct xcursor_file_header	*fileHeader,
-			 uint32_t	size,
-			 int		count)
+_XcursorFindImageToc(struct xcursor_file_header *fileHeader,
+		     uint32_t size, int count)
 {
 	unsigned int toc;
 	uint32_t thisSize;
@@ -436,9 +434,9 @@ _XcursorFindImageToc(struct xcursor_file_header	*fileHeader,
 }
 
 static struct xcursor_image *
-_XcursorReadImage(struct xcursor_file		*file,
-		   struct xcursor_file_header	*fileHeader,
-		   int			toc)
+_XcursorReadImage(struct xcursor_file *file,
+		  struct xcursor_file_header *fileHeader,
+		  int toc)
 {
 	struct xcursor_chunk_header chunkHeader;
 	struct xcursor_image head;
