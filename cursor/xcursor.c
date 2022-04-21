@@ -755,39 +755,43 @@ xcursor_theme_inherits(const char *full)
 		return NULL;
 
 	f = fopen(full, "r");
-	if (f) {
-		while (fgets(line, sizeof(line), f)) {
-			if (!strncmp(line, "Inherits", 8)) {
-				char *l = line + 8;
-				char *r;
-				while (*l == ' ')
-					l++;
-				if (*l != '=')
-					continue;
+	if (!f)
+		return NULL;
+
+	while (fgets(line, sizeof(line), f)) {
+		if (strncmp(line, "Inherits", 8))
+			continue;
+
+		char *l = line + 8;
+		char *r;
+		while (*l == ' ')
+			l++;
+		if (*l != '=')
+			continue;
+		l++;
+		while (*l == ' ')
+			l++;
+		result = malloc(strlen(l) + 1);
+		if (!result)
+			break;
+
+		r = result;
+		while (*l) {
+			while (xcursor_sep(*l) || xcursor_white(*l))
 				l++;
-				while (*l == ' ')
-					l++;
-				result = malloc(strlen(l) + 1);
-				if (result) {
-					r = result;
-					while (*l) {
-						while (xcursor_sep(*l) || xcursor_white(*l))
-							l++;
-						if (!*l)
-							break;
-						if (r != result)
-							*r++ = ':';
-						while (*l && !xcursor_white(*l) &&
-						       !xcursor_sep(*l))
-							*r++ = *l++;
-					}
-					*r++ = '\0';
-				}
+			if (!*l)
 				break;
-			}
+			if (r != result)
+				*r++ = ':';
+			while (*l && !xcursor_white(*l) && !xcursor_sep(*l))
+				*r++ = *l++;
 		}
-		fclose(f);
+		*r++ = '\0';
+
+		break;
 	}
+
+	fclose(f);
 	return result;
 }
 
