@@ -266,34 +266,34 @@ xcursor_read_uint(FILE *file, uint32_t *u)
 }
 
 static void
-xcursor_file_header_destroy(struct xcursor_file_header *fileHeader)
+xcursor_file_header_destroy(struct xcursor_file_header *file_header)
 {
-	free(fileHeader);
+	free(file_header);
 }
 
 static struct xcursor_file_header *
 xcursor_file_header_create(uint32_t ntoc)
 {
-	struct xcursor_file_header *fileHeader;
+	struct xcursor_file_header *file_header;
 
 	if (ntoc > 0x10000)
 		return NULL;
-	fileHeader = malloc(sizeof(struct xcursor_file_header) +
+	file_header = malloc(sizeof(struct xcursor_file_header) +
 			    ntoc * sizeof(struct xcursor_file_toc));
-	if (!fileHeader)
+	if (!file_header)
 		return NULL;
-	fileHeader->magic = XCURSOR_MAGIC;
-	fileHeader->header = XCURSOR_FILE_HEADER_LEN;
-	fileHeader->version = XCURSOR_FILE_VERSION;
-	fileHeader->ntoc = ntoc;
-	fileHeader->tocs = (struct xcursor_file_toc *) (fileHeader + 1);
-	return fileHeader;
+	file_header->magic = XCURSOR_MAGIC;
+	file_header->header = XCURSOR_FILE_HEADER_LEN;
+	file_header->version = XCURSOR_FILE_VERSION;
+	file_header->ntoc = ntoc;
+	file_header->tocs = (struct xcursor_file_toc *) (file_header + 1);
+	return file_header;
 }
 
 static struct xcursor_file_header *
 xcursor_read_file_header(FILE *file)
 {
-	struct xcursor_file_header head, *fileHeader;
+	struct xcursor_file_header head, *file_header;
 	uint32_t skip;
 	unsigned int n;
 
@@ -314,60 +314,60 @@ xcursor_read_file_header(FILE *file)
 	if (skip)
 		if (fseek(file, skip, SEEK_CUR) == EOF)
 			return NULL;
-	fileHeader = xcursor_file_header_create(head.ntoc);
-	if (!fileHeader)
+	file_header = xcursor_file_header_create(head.ntoc);
+	if (!file_header)
 		return NULL;
-	fileHeader->magic = head.magic;
-	fileHeader->header = head.header;
-	fileHeader->version = head.version;
-	fileHeader->ntoc = head.ntoc;
-	for (n = 0; n < fileHeader->ntoc; n++) {
-		if (!xcursor_read_uint(file, &fileHeader->tocs[n].type))
+	file_header->magic = head.magic;
+	file_header->header = head.header;
+	file_header->version = head.version;
+	file_header->ntoc = head.ntoc;
+	for (n = 0; n < file_header->ntoc; n++) {
+		if (!xcursor_read_uint(file, &file_header->tocs[n].type))
 			break;
-		if (!xcursor_read_uint(file, &fileHeader->tocs[n].subtype))
+		if (!xcursor_read_uint(file, &file_header->tocs[n].subtype))
 			break;
-		if (!xcursor_read_uint(file, &fileHeader->tocs[n].position))
+		if (!xcursor_read_uint(file, &file_header->tocs[n].position))
 			break;
 	}
-	if (n != fileHeader->ntoc) {
-		xcursor_file_header_destroy(fileHeader);
+	if (n != file_header->ntoc) {
+		xcursor_file_header_destroy(file_header);
 		return NULL;
 	}
-	return fileHeader;
+	return file_header;
 }
 
 static bool
 xcursor_seek_to_toc(FILE *file,
-		    struct xcursor_file_header *fileHeader,
+		    struct xcursor_file_header *file_header,
 		    int toc)
 {
-	if (!file || !fileHeader ||
-	    fseek(file, fileHeader->tocs[toc].position, SEEK_SET) == EOF)
+	if (!file || !file_header ||
+	    fseek(file, file_header->tocs[toc].position, SEEK_SET) == EOF)
 		return false;
 	return true;
 }
 
 static bool
 xcursor_file_read_chunk_header(FILE *file,
-			       struct xcursor_file_header *fileHeader,
+			       struct xcursor_file_header *file_header,
 			       int toc,
-			       struct xcursor_chunk_header *chunkHeader)
+			       struct xcursor_chunk_header *chunk_header)
 {
-	if (!file || !fileHeader || !chunkHeader)
+	if (!file || !file_header || !chunk_header)
 		return false;
-	if (!xcursor_seek_to_toc(file, fileHeader, toc))
+	if (!xcursor_seek_to_toc(file, file_header, toc))
 		return false;
-	if (!xcursor_read_uint(file, &chunkHeader->header))
+	if (!xcursor_read_uint(file, &chunk_header->header))
 		return false;
-	if (!xcursor_read_uint(file, &chunkHeader->type))
+	if (!xcursor_read_uint(file, &chunk_header->type))
 		return false;
-	if (!xcursor_read_uint(file, &chunkHeader->subtype))
+	if (!xcursor_read_uint(file, &chunk_header->subtype))
 		return false;
-	if (!xcursor_read_uint(file, &chunkHeader->version))
+	if (!xcursor_read_uint(file, &chunk_header->version))
 		return false;
 	/* sanity check */
-	if (chunkHeader->type != fileHeader->tocs[toc].type ||
-	    chunkHeader->subtype != fileHeader->tocs[toc].subtype)
+	if (chunk_header->type != file_header->tocs[toc].type ||
+	    chunk_header->subtype != file_header->tocs[toc].subtype)
 		return false;
 	return true;
 }
@@ -379,72 +379,72 @@ dist(uint32_t a, uint32_t b)
 }
 
 static uint32_t
-xcursor_file_best_size(struct xcursor_file_header *fileHeader,
+xcursor_file_best_size(struct xcursor_file_header *file_header,
 		       uint32_t size, int *nsizesp)
 {
 	unsigned int n;
 	int nsizes = 0;
-	uint32_t bestSize = 0;
-	uint32_t thisSize;
+	uint32_t best_size = 0;
+	uint32_t this_size;
 
-	if (!fileHeader || !nsizesp)
+	if (!file_header || !nsizesp)
 		return 0;
 
-	for (n = 0; n < fileHeader->ntoc; n++) {
-		if (fileHeader->tocs[n].type != XCURSOR_IMAGE_TYPE)
+	for (n = 0; n < file_header->ntoc; n++) {
+		if (file_header->tocs[n].type != XCURSOR_IMAGE_TYPE)
 			continue;
-		thisSize = fileHeader->tocs[n].subtype;
-		if (!bestSize || dist(thisSize, size) < dist(bestSize, size)) {
-			bestSize = thisSize;
+		this_size = file_header->tocs[n].subtype;
+		if (!best_size || dist(this_size, size) < dist(best_size, size)) {
+			best_size = this_size;
 			nsizes = 1;
-		} else if (thisSize == bestSize) {
+		} else if (this_size == best_size) {
 			nsizes++;
 		}
 	}
 	*nsizesp = nsizes;
-	return bestSize;
+	return best_size;
 }
 
 static int
-xcursor_find_image_toc(struct xcursor_file_header *fileHeader,
+xcursor_find_image_toc(struct xcursor_file_header *file_header,
 		       uint32_t size, int count)
 {
 	unsigned int toc;
-	uint32_t thisSize;
+	uint32_t this_size;
 
-	if (!fileHeader)
+	if (!file_header)
 		return 0;
 
-	for (toc = 0; toc < fileHeader->ntoc; toc++) {
-		if (fileHeader->tocs[toc].type != XCURSOR_IMAGE_TYPE)
+	for (toc = 0; toc < file_header->ntoc; toc++) {
+		if (file_header->tocs[toc].type != XCURSOR_IMAGE_TYPE)
 			continue;
-		thisSize = fileHeader->tocs[toc].subtype;
-		if (thisSize != size)
+		this_size = file_header->tocs[toc].subtype;
+		if (this_size != size)
 			continue;
 		if (!count)
 			break;
 		count--;
 	}
-	if (toc == fileHeader->ntoc)
+	if (toc == file_header->ntoc)
 		return -1;
 	return toc;
 }
 
 static struct xcursor_image *
 xcursor_read_image(FILE *file,
-		   struct xcursor_file_header *fileHeader,
+		   struct xcursor_file_header *file_header,
 		   int toc)
 {
-	struct xcursor_chunk_header chunkHeader;
+	struct xcursor_chunk_header chunk_header;
 	struct xcursor_image head;
 	struct xcursor_image *image;
 	int n;
 	uint32_t *p;
 
-	if (!file || !fileHeader)
+	if (!file || !file_header)
 		return NULL;
 
-	if (!xcursor_file_read_chunk_header(file, fileHeader, toc, &chunkHeader))
+	if (!xcursor_file_read_chunk_header(file, file_header, toc, &chunk_header))
 		return NULL;
 	if (!xcursor_read_uint(file, &head.width))
 		return NULL;
@@ -469,9 +469,9 @@ xcursor_read_image(FILE *file,
 	image = xcursor_image_create(head.width, head.height);
 	if (image == NULL)
 		return NULL;
-	if (chunkHeader.version < image->version)
-		image->version = chunkHeader.version;
-	image->size = chunkHeader.subtype;
+	if (chunk_header.version < image->version)
+		image->version = chunk_header.version;
+	image->size = chunk_header.subtype;
 	image->xhot = head.xhot;
 	image->yhot = head.yhot;
 	image->delay = head.delay;
@@ -490,8 +490,8 @@ xcursor_read_image(FILE *file,
 static struct xcursor_images *
 xcursor_xc_file_load_images(FILE *file, int size)
 {
-	struct xcursor_file_header *fileHeader;
-	uint32_t bestSize;
+	struct xcursor_file_header *file_header;
+	uint32_t best_size;
 	int nsize;
 	struct xcursor_images *images;
 	int n;
@@ -499,30 +499,30 @@ xcursor_xc_file_load_images(FILE *file, int size)
 
 	if (!file || size < 0)
 		return NULL;
-	fileHeader = xcursor_read_file_header(file);
-	if (!fileHeader)
+	file_header = xcursor_read_file_header(file);
+	if (!file_header)
 		return NULL;
-	bestSize = xcursor_file_best_size(fileHeader, (uint32_t) size, &nsize);
-	if (!bestSize) {
-		xcursor_file_header_destroy(fileHeader);
+	best_size = xcursor_file_best_size(file_header, (uint32_t) size, &nsize);
+	if (!best_size) {
+		xcursor_file_header_destroy(file_header);
 		return NULL;
 	}
 	images = xcursor_images_create(nsize);
 	if (!images) {
-		xcursor_file_header_destroy(fileHeader);
+		xcursor_file_header_destroy(file_header);
 		return NULL;
 	}
 	for (n = 0; n < nsize; n++) {
-		toc = xcursor_find_image_toc(fileHeader, bestSize, n);
+		toc = xcursor_find_image_toc(file_header, best_size, n);
 		if (toc < 0)
 			break;
-		images->images[images->nimage] = xcursor_read_image(file, fileHeader,
+		images->images[images->nimage] = xcursor_read_image(file, file_header,
 								    toc);
 		if (!images->images[images->nimage])
 			break;
 		images->nimage++;
 	}
-	xcursor_file_header_destroy(fileHeader);
+	xcursor_file_header_destroy(file_header);
 	if (images->nimage != nsize) {
 		xcursor_images_destroy(images);
 		images = NULL;
