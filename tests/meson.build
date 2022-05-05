@@ -1,3 +1,7 @@
+if not get_option('libraries')
+	error('-Dtests=true requires -Dlibraries=true')
+endif
+
 test_runner = static_library(
 	'test-runner',
 	sources: [

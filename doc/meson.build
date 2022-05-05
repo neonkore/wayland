@@ -1,3 +1,7 @@
+if not get_option('libraries')
+	error('-Ddocumentation=true requires -Dlibraries=true')
+endif
+
 dot = find_program('dot')
 doxygen = find_program('doxygen')
 xsltproc = find_program('xsltproc')

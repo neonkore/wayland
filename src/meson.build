@@ -1,3 +1,7 @@
+if not (get_option('scanner') or get_option('libraries'))
+	error('Either -Dscanner=true or -Dlibraries=true is required')
+endif
+
 wayland_version_h = configuration_data()
 wayland_version_h.set('WAYLAND_VERSION', meson.project_version())
 wayland_version_h.set('WAYLAND_VERSION_MAJOR', wayland_version[0].to_int())

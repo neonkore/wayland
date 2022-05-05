@@ -118,12 +118,12 @@ subdir('src')
 if get_option('libraries')
 	subdir('cursor')
 	subdir('egl')
-	if get_option('tests')
-		subdir('tests')
-	endif
-	if get_option('documentation')
-		subdir('doc')
-	endif
+endif
+if get_option('tests')
+	subdir('tests')
+endif
+if get_option('documentation')
+	subdir('doc')
 endif
 
 if get_option('scanner')
