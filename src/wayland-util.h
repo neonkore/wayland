@@ -182,7 +182,7 @@ struct wl_message {
  * For example, consider a protocol interface `foo`, marked as version `1`, with
  * two requests and one event.
  *
- * \code
+ * \code{.xml}
  * <interface name="foo" version="1">
  *   <request name="a"></request>
  *   <request name="b"></request>
