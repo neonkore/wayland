@@ -92,7 +92,7 @@ shm_pool_resize(struct shm_pool *pool, int size)
 
 	pool->data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED,
 			  pool->fd, 0);
-	if (pool->data == (void *)-1)
+	if (pool->data == MAP_FAILED)
 		return 0;
 	pool->size = size;
 
