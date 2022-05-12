@@ -1252,11 +1252,12 @@ wl_global_create(struct wl_display *display,
 	wl_list_insert(display->global_list.prev, &global->link);
 
 	wl_list_for_each(resource, &display->registry_resource_list, link)
-		wl_resource_post_event(resource,
-				       WL_REGISTRY_GLOBAL,
-				       global->name,
-				       global->interface->name,
-				       global->version);
+		if (wl_global_is_visible(resource->client, global))
+			wl_resource_post_event(resource,
+					       WL_REGISTRY_GLOBAL,
+					       global->name,
+					       global->interface->name,
+					       global->version);
 
 	return global;
 }
@@ -1294,8 +1295,9 @@ wl_global_remove(struct wl_global *global)
 			 global->name);
 
 	wl_list_for_each(resource, &display->registry_resource_list, link)
-		wl_resource_post_event(resource, WL_REGISTRY_GLOBAL_REMOVE,
-				       global->name);
+		if (wl_global_is_visible(resource->client, global))
+			wl_resource_post_event(resource, WL_REGISTRY_GLOBAL_REMOVE,
+					       global->name);
 
 	global->removed = true;
 }
