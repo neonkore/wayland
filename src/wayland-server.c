@@ -1315,6 +1315,20 @@ wl_global_get_interface(const struct wl_global *global)
 	return global->interface;
 }
 
+/** Get the version of the given global.
+ *
+ * \param global The global object.
+ * \return The version advertised by the global.
+ *
+ * \memberof wl_global
+ * \since 1.21
+ */
+WL_EXPORT uint32_t
+wl_global_get_version(const struct wl_global *global)
+{
+	return global->version;
+}
+
 /** Get the display object for the given global
  *
  * \param global The global object
