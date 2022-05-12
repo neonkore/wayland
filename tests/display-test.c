@@ -1006,9 +1006,16 @@ registry_handle_filtered(void *data, struct wl_registry *registry,
 	}
 }
 
+static void
+registry_handle_remove_filtered(void *data, struct wl_registry *registry,
+				uint32_t id)
+{
+	assert(false);
+}
+
 static const struct wl_registry_listener registry_listener_filtered = {
 	registry_handle_filtered,
-	NULL
+	registry_handle_remove_filtered,
 };
 
 static void
@@ -1040,6 +1047,58 @@ TEST(filtered_global_is_hidden)
 	display_run(d);
 
 	wl_global_destroy(g);
+
+	display_destroy(d);
+}
+
+static void
+get_dynamic_globals(void *data)
+{
+	struct client *c = client_connect();
+	struct wl_registry *registry;
+
+	registry = wl_display_get_registry(c->wl_display);
+	wl_registry_add_listener(registry, &registry_listener_filtered, data);
+	wl_display_roundtrip(c->wl_display);
+
+	/* Wait for the server to create a new global */
+	assert(stop_display(c, 1) >= 0);
+
+	/* Check that we don't see it */
+	wl_display_roundtrip(c->wl_display);
+
+	/* Wait for the server to remove that global */
+	assert(stop_display(c, 1) >= 0);
+
+	/* Check that we don't get a global_remove event */
+	wl_display_roundtrip(c->wl_display);
+
+	wl_registry_destroy(registry);
+	client_disconnect_nocheck(c);
+}
+
+TEST(filtered_dynamic_global_is_hidden)
+{
+	struct display *d;
+	struct wl_global *g;
+
+	d = display_create();
+	wl_display_set_global_filter(d->wl_display, global_filter, NULL);
+
+	/* Create a client and let it enumerate the globals */
+	client_create_noarg(d, get_dynamic_globals);
+	display_run(d);
+
+	/* Dynamically create a new global */
+	g = wl_global_create(d->wl_display, &wl_data_offer_interface,
+			     1, d, bind_data_offer);
+
+	display_resume(d);
+
+	/* Dynamically remove the global */
+	wl_global_destroy(g);
+
+	display_resume(d);
 
 	display_destroy(d);
 }
