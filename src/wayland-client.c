@@ -2311,6 +2311,19 @@ wl_proxy_get_class(struct wl_proxy *proxy)
  * queued in \c queue from now. If queue is NULL, then the display's
  * default queue is set to the proxy.
  *
+ * In order to guarantee proper handing of all events which were queued
+ * before the queue change takes effect, it is required to dispatch the
+ * proxy's old event queue after setting a new event queue.
+ *
+ * This is particularly important for multi-threaded setups, where it is
+ * possible for events to be queued to the proxy's old queue from a
+ * different thread during the invocation of this function.
+ *
+ * To ensure that all events for a newly created proxy are dispatched
+ * on a particular queue, it is necessary to use a proxy wrapper if
+ * events are read and dispatched on more than one thread. See
+ * wl_proxy_create_wrapper() for more details.
+ *
  * \note By default, the queue set in proxy is the one inherited from parent.
  *
  * \sa wl_display_dispatch_queue()
