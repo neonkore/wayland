@@ -2333,12 +2333,16 @@ wl_proxy_get_class(struct wl_proxy *proxy)
 WL_EXPORT void
 wl_proxy_set_queue(struct wl_proxy *proxy, struct wl_event_queue *queue)
 {
+	pthread_mutex_lock(&proxy->display->mutex);
+
 	if (queue) {
 		assert(proxy->display == queue->display);
 		proxy->queue = queue;
 	} else {
 		proxy->queue = &proxy->display->default_queue;
 	}
+
+	pthread_mutex_unlock(&proxy->display->mutex);
 }
 
 /** Create a proxy wrapper for making queue assignments thread-safe
