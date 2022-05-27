@@ -539,24 +539,24 @@ xcursor_xc_file_load_images(FILE *file, int size)
 static char *
 xcursor_library_path(void)
 {
-	const char *env_var;
-	char *path = NULL;
-	int pathlen = 0;
+	const char *env_var, *suffix;
+	char *path;
+	size_t path_size;
 
 	env_var = getenv("XCURSOR_PATH");
-	if (env_var) {
-		path = strdup(env_var);
-	} else {
-		env_var = getenv("XDG_DATA_HOME");
-		if (env_var) {
-				pathlen = strlen(env_var) + strlen(CURSORDIR ":" XCURSORPATH) + 1;
-				path = malloc(pathlen);
-				snprintf(path, pathlen, "%s%s", env_var,
-					 CURSORDIR ":" XCURSORPATH);
-		} else {
-			path = strdup(XDG_DATA_HOME_FALLBACK CURSORDIR ":" XCURSORPATH);
-		}
-	}
+	if (env_var)
+		return strdup(env_var);
+
+	env_var = getenv("XDG_DATA_HOME");
+	if (!env_var)
+		env_var = XDG_DATA_HOME_FALLBACK;
+
+	suffix = CURSORDIR ":" XCURSORPATH;
+	path_size = strlen(env_var) + strlen(suffix) + 1;
+	path = malloc(path_size);
+	if (!path)
+		return NULL;
+	snprintf(path, path_size, "%s%s", env_var, suffix);
 	return path;
 }
 
