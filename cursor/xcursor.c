@@ -530,15 +530,6 @@ xcursor_xc_file_load_images(FILE *file, int size)
 	return images;
 }
 
-static struct xcursor_images *
-xcursor_file_load_images(FILE *file, int size)
-{
-	if (!file)
-		return NULL;
-
-	return xcursor_xc_file_load_images(file, size);
-}
-
 /*
  * From libXcursor/src/library.c
  */
@@ -786,7 +777,7 @@ load_all_cursors_from_dir(const char *path, int size,
 			continue;
 		}
 
-		images = xcursor_file_load_images(f, size);
+		images = xcursor_xc_file_load_images(f, size);
 
 		if (images) {
 			xcursor_images_set_name(images, ent->d_name);
