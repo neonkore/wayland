@@ -229,24 +229,6 @@ xcursor_images_destroy(struct xcursor_images *images)
 	free(images);
 }
 
-static void
-xcursor_images_set_name(struct xcursor_images *images, const char *name)
-{
-	char *new;
-
-	if (!images || !name)
-		return;
-
-	new = malloc(strlen(name) + 1);
-
-	if (!new)
-		return;
-
-	strcpy(new, name);
-	free(images->name);
-	images->name = new;
-}
-
 static bool
 xcursor_read_uint(FILE *file, uint32_t *u)
 {
@@ -784,7 +766,7 @@ load_all_cursors_from_dir(const char *path, int size,
 		images = xcursor_xc_file_load_images(f, size);
 
 		if (images) {
-			xcursor_images_set_name(images, ent->d_name);
+			images->name = strdup(ent->d_name);
 			load_callback(images, user_data);
 		}
 
