@@ -763,7 +763,8 @@ load_all_cursors_from_dir(const char *path, int size,
 	for (ent = readdir(dir); ent; ent = readdir(dir)) {
 #ifdef _DIRENT_HAVE_D_TYPE
 		if (ent->d_type != DT_UNKNOWN &&
-			(ent->d_type != DT_REG && ent->d_type != DT_LNK))
+		    ent->d_type != DT_REG &&
+		    ent->d_type != DT_LNK)
 			continue;
 #endif
 
