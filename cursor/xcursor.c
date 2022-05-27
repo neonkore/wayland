@@ -798,8 +798,8 @@ load_all_cursors_from_dir(const char *path, int size,
  */
 void
 xcursor_load_theme(const char *theme, int size,
-			void (*load_callback)(struct xcursor_images *, void *),
-			void *user_data)
+		   void (*load_callback)(struct xcursor_images *, void *),
+		   void *user_data)
 {
 	char *full, *dir;
 	char *inherits = NULL;
