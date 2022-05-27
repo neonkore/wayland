@@ -114,34 +114,6 @@ struct xcursor_chunk_header {
 };
 
 /*
- * Here's a list of the known chunk types
- */
-
-/*
- * Comments consist of a 4-byte length field followed by
- * UTF-8 encoded text
- *
- *  Comment:
- *	ChunkHeader header	chunk header
- *	CARD32	    length	bytes in text
- *	LISTofCARD8 text	UTF-8 encoded text
- */
-
-#define XCURSOR_COMMENT_TYPE 0xfffe0001
-#define XCURSOR_COMMENT_VERSION 1
-#define XCURSOR_COMMENT_HEADER_LEN (XCURSOR_CHUNK_HEADER_LEN + (1 *4))
-#define XCURSOR_COMMENT_COPYRIGHT 1
-#define XCURSOR_COMMENT_LICENSE 2
-#define XCURSOR_COMMENT_OTHER 3
-#define XCURSOR_COMMENT_MAX_LEN 0x100000
-
-struct xcursor_comment {
-	uint32_t version;
-	uint32_t comment_type;
-	char *comment;
-};
-
-/*
  * Each cursor image occupies a separate image chunk.
  * The length of the image header follows the chunk header
  * so that future versions can extend the header without
@@ -161,11 +133,6 @@ struct xcursor_comment {
 #define XCURSOR_IMAGE_VERSION 1
 #define XCURSOR_IMAGE_HEADER_LEN (XCURSOR_CHUNK_HEADER_LEN + (5*4))
 #define XCURSOR_IMAGE_MAX_SIZE 0x7fff /* 32767x32767 max cursor size */
-
-struct xcursor_comments {
-	int ncomment; /* number of comments */
-	struct xcursor_comments **comments; /* array of XcursorComment pointers */
-};
 
 /*
  * From libXcursor/src/file.c
