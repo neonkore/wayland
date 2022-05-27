@@ -698,7 +698,8 @@ xcursor_sep(char c)
 static char *
 xcursor_theme_inherits(const char *full)
 {
-	char line[8192];
+	char *line = NULL;
+	size_t line_size = 0;
 	char *result = NULL;
 	FILE *f;
 
@@ -709,7 +710,7 @@ xcursor_theme_inherits(const char *full)
 	if (!f)
 		return NULL;
 
-	while (fgets(line, sizeof(line), f)) {
+	while (getline(&line, &line_size, f) >= 0) {
 		if (strncmp(line, "Inherits", 8))
 			continue;
 
@@ -743,6 +744,8 @@ xcursor_theme_inherits(const char *full)
 	}
 
 	fclose(f);
+	free(line);
+
 	return result;
 }
 
