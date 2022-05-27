@@ -635,11 +635,13 @@ xcursor_theme_inherits(const char *full)
 		return NULL;
 
 	while (getline(&line, &line_size, f) >= 0) {
+		const char *l;
+		char *r;
+
 		if (strncmp(line, "Inherits", 8))
 			continue;
 
-		char *l = line + 8;
-		char *r;
+		l = line + 8;
 		while (*l == ' ')
 			l++;
 		if (*l != '=')
