@@ -527,38 +527,17 @@ xcursor_library_path(void)
 	return path;
 }
 
-static  void
-xcursor_add_path_elt(char *path, const char *elt, int len)
-{
-	int pathlen = strlen(path);
-
-	/* append / if the path doesn't currently have one */
-	if (path[0] == '\0' || path[pathlen - 1] != '/') {
-		strcat(path, "/");
-		pathlen++;
-	}
-	if (len == -1)
-		len = strlen(elt);
-	/* strip leading slashes */
-	while (len && elt[0] == '/') {
-		elt++;
-		len--;
-	}
-	strncpy(path + pathlen, elt, len);
-	path[pathlen + len] = '\0';
-}
-
 static char *
 xcursor_build_theme_dir(const char *dir, const char *theme)
 {
 	const char *colon;
 	const char *tcolon;
 	char *full;
-	char *home;
+	const char *home, *homesep;
 	int dirlen;
 	int homelen;
 	int themelen;
-	int len;
+	size_t full_size;
 
 	if (!dir || !theme)
 		return NULL;
@@ -575,13 +554,15 @@ xcursor_build_theme_dir(const char *dir, const char *theme)
 
 	themelen = tcolon - theme;
 
-	home = NULL;
+	home = "";
 	homelen = 0;
+	homesep = "";
 	if (*dir == '~') {
 		home = getenv("HOME");
 		if (!home)
 			return NULL;
 		homelen = strlen(home);
+		homesep = "/";
 		dir++;
 		dirlen--;
 	}
@@ -590,17 +571,12 @@ xcursor_build_theme_dir(const char *dir, const char *theme)
 	 * add space for any needed directory separators, one per component,
 	 * and one for the trailing null
 	 */
-	len = 1 + homelen + 1 + dirlen + 1 + themelen + 1;
-
-	full = malloc(len);
+	full_size = 1 + homelen + 1 + dirlen + 1 + themelen + 1;
+	full = malloc(full_size);
 	if (!full)
 		return NULL;
-	full[0] = '\0';
-
-	if (home)
-		xcursor_add_path_elt(full, home, -1);
-	xcursor_add_path_elt(full, dir, dirlen);
-	xcursor_add_path_elt(full, theme, themelen);
+	snprintf(full, full_size, "%s%s%.*s/%.*s", home, homesep,
+		 dirlen, dir, themelen, theme);
 	return full;
 }
 
@@ -608,17 +584,16 @@ static char *
 xcursor_build_fullname(const char *dir, const char *subdir, const char *file)
 {
 	char *full;
+	size_t full_size;
 
 	if (!dir || !subdir || !file)
 		return NULL;
 
-	full = malloc(strlen(dir) + 1 + strlen(subdir) + 1 + strlen(file) + 1);
+	full_size = strlen(dir) + 1 + strlen(subdir) + 1 + strlen(file) + 1;
+	full = malloc(full_size);
 	if (!full)
 		return NULL;
-	full[0] = '\0';
-	xcursor_add_path_elt(full, dir, -1);
-	xcursor_add_path_elt(full, subdir, -1);
-	xcursor_add_path_elt(full, file, -1);
+	snprintf(full, full_size, "%s/%s/%s", dir, subdir, file);
 	return full;
 }
 
