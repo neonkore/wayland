@@ -578,6 +578,9 @@ err_client:
  * SO_PEERCRED, on the client socket fd.  All the pointers can be
  * NULL, if the caller is not interested in a particular ID.
  *
+ * Note, process IDs are subject to race conditions and are not a reliable way
+ * to identify a client.
+ *
  * Be aware that for clients that a compositor forks and execs and
  * then connects using socketpair(), this function will return the
  * credentials for the compositor.  The credentials for the socketpair
