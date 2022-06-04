@@ -168,7 +168,7 @@ int
 os_resize_anonymous_file(int fd, off_t size)
 {
 #ifdef HAVE_POSIX_FALLOCATE
-	/* 
+	/*
 	 * Filesystems that do support fallocate will return EINVAL or
 	 * EOPNOTSUPP. In this case we need to fall back to ftruncate
 	 */
