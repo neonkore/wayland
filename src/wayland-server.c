@@ -1208,6 +1208,10 @@ wl_display_destroy(struct wl_display *display)
  * Setting the filter NULL will result in all globals being
  * advertised to all clients. The default is no filter.
  *
+ * The filter should be installed before any client connects and should always
+ * take the same decision given a client and a global. Not doing so will result
+ * in inconsistent filtering and broken wl_registry event sequences.
+ *
  * \memberof wl_display
  */
 WL_EXPORT void
