@@ -232,6 +232,7 @@ wl_map_insert_new(struct wl_map *map, uint32_t flags, void *data)
 		 * better make it a NULL so wl_map_for_each doesn't
 		 * dereference it later. */
 		entry->data = NULL;
+		errno = ENOSPC;
 		return 0;
 	}
 	entry->data = data;
@@ -254,8 +255,10 @@ wl_map_insert_at(struct wl_map *map, uint32_t flags, uint32_t i, void *data)
 		i -= WL_SERVER_ID_START;
 	}
 
-	if (i > WL_MAP_MAX_OBJECTS)
+	if (i > WL_MAP_MAX_OBJECTS) {
+		errno = ENOSPC;
 		return -1;
+	}
 
 	count = entries->size / sizeof *start;
 	if (count < i) {
@@ -299,8 +302,10 @@ wl_map_reserve_new(struct wl_map *map, uint32_t i)
 		i -= WL_SERVER_ID_START;
 	}
 
-	if (i > WL_MAP_MAX_OBJECTS)
+	if (i > WL_MAP_MAX_OBJECTS) {
+		errno = ENOSPC;
 		return -1;
+	}
 
 	count = entries->size / sizeof *start;
 	if (count < i) {
