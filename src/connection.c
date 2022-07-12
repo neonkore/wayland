@@ -636,7 +636,7 @@ wl_closure_marshal(struct wl_object *sender, uint32_t opcode,
 			closure->args[i].n = object ? object->id : 0;
 			break;
 		case 'a':
-			if (!arg.nullable && args[i].a == NULL)
+			if (args[i].a == NULL)
 				goto err_null;
 			break;
 		case 'h':
