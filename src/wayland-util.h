@@ -118,7 +118,7 @@ struct wl_object;
  * * `n`: new_id
  * * `a`: array
  * * `h`: fd
- * * `?`: following argument is nullable
+ * * `?`: following argument (`o` or `s`) is nullable
  *
  * While demarshaling primitive arguments is straightforward, when demarshaling
  * messages containing `object` or `new_id` arguments, the protocol
