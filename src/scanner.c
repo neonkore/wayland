@@ -414,7 +414,6 @@ is_nullable_type(struct arg *arg)
 	/* Strings and objects are possibly nullable */
 	case STRING:
 	case OBJECT:
-	case NEW_ID:
 		return true;
 	default:
 		return false;

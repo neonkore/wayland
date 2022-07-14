@@ -630,7 +630,7 @@ wl_closure_marshal(struct wl_object *sender, uint32_t opcode,
 			break;
 		case 'n':
 			object = args[i].o;
-			if (!arg.nullable && object == NULL)
+			if (object == NULL)
 				goto err_null;
 
 			closure->args[i].n = object ? object->id : 0;
@@ -799,7 +799,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			id = *p++;
 			closure->args[i].n = id;
 
-			if (id == 0 && !arg.nullable) {
+			if (id == 0) {
 				wl_log("NULL new ID received on non-nullable "
 				       "type, message %s(%s)\n", message->name,
 				       message->signature);

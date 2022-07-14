@@ -63,8 +63,8 @@ TEST(message_count_arrays)
 		{ "middle", "iufasonh", NULL },
 		{ "multiple", "aaiufaasonhaa", NULL },
 		{ "leading_version", "2aaiufaasonhaa", NULL },
-		{ "among_nullables", "iufsa?oa?nah", NULL },
-		{ "all_mixed", "2aiufas?oa?na", NULL },
+		{ "among_nullables", "iufsa?oa?sah", NULL },
+		{ "all_mixed", "2aiufas?oa?sa", NULL },
 	};
 	const struct {
 		const struct wl_message *message;
