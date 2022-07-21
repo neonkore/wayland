@@ -41,6 +41,8 @@
 struct client_destroy_listener {
 	struct wl_listener listener;
 	bool done;
+	struct wl_listener late_listener;
+	bool late_done;
 };
 
 static void
@@ -49,7 +51,18 @@ client_destroy_notify(struct wl_listener *l, void *data)
 	struct client_destroy_listener *listener =
 		wl_container_of(l, listener, listener);
 
+	assert(!listener->late_done);
 	listener->done = true;
+}
+
+static void
+client_late_destroy_notify(struct wl_listener *l, void *data)
+{
+	struct client_destroy_listener *listener =
+		wl_container_of(l, listener, late_listener);
+
+	assert(listener->done);
+	listener->late_done = true;
 }
 
 TEST(client_destroy_listener)
@@ -67,21 +80,32 @@ TEST(client_destroy_listener)
 
 	a.listener.notify = client_destroy_notify;
 	a.done = false;
+	a.late_listener.notify = client_late_destroy_notify;
+	a.late_done = false;
 	wl_client_add_destroy_listener(client, &a.listener);
+	wl_client_add_destroy_late_listener(client, &a.late_listener);
 
 	assert(wl_client_get_destroy_listener(client, client_destroy_notify) ==
 	       &a.listener);
+	assert(wl_client_get_destroy_late_listener(client, client_late_destroy_notify) ==
+	       &a.late_listener);
 
 	b.listener.notify = client_destroy_notify;
 	b.done = false;
+	b.late_listener.notify = client_late_destroy_notify;
+	b.late_done = false;
 	wl_client_add_destroy_listener(client, &b.listener);
+	wl_client_add_destroy_late_listener(client, &b.late_listener);
 
 	wl_list_remove(&a.listener.link);
+	wl_list_remove(&a.late_listener.link);
 
 	wl_client_destroy(client);
 
 	assert(!a.done);
+	assert(!a.late_done);
 	assert(b.done);
+	assert(b.late_done);
 
 	close(s[0]);
 	close(s[1]);

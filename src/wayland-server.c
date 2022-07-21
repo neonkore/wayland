@@ -79,6 +79,7 @@ struct wl_client {
 	struct wl_list link;
 	struct wl_map objects;
 	struct wl_priv_signal destroy_signal;
+	struct wl_priv_signal destroy_late_signal;
 	pid_t pid;
 	uid_t uid;
 	gid_t gid;
@@ -547,6 +548,7 @@ wl_client_create(struct wl_display *display, int fd)
 		goto err_map;
 
 	wl_priv_signal_init(&client->destroy_signal);
+	wl_priv_signal_init(&client->destroy_late_signal);
 	if (bind_display(client, display) < 0)
 		goto err_map;
 
@@ -864,6 +866,17 @@ wl_resource_get_class(struct wl_resource *resource)
 	return resource->object.interface->name;
 }
 
+/**
+ * Add a listener to be called at the beginning of wl_client destruction
+ *
+ * The listener provided will be called when wl_client destroy has begun,
+ * before any of that client's resources have been destroyed.
+ *
+ * There is no requirement to remove the link of the wl_listener when the
+ * signal is emitted.
+ *
+ * \memberof wl_client
+ */
 WL_EXPORT void
 wl_client_add_destroy_listener(struct wl_client *client,
 			       struct wl_listener *listener)
@@ -878,6 +891,32 @@ wl_client_get_destroy_listener(struct wl_client *client,
 	return wl_priv_signal_get(&client->destroy_signal, notify);
 }
 
+/**
+ * Add a listener to be called at the end of wl_client destruction
+ *
+ * The listener provided will be called when wl_client destroy is nearly
+ * complete, after all of that client's resources have been destroyed.
+ *
+ * There is no requirement to remove the link of the wl_listener when the
+ * signal is emitted.
+ *
+ * \memberof wl_client
+ * \since 1.22.0
+ */
+WL_EXPORT void
+wl_client_add_destroy_late_listener(struct wl_client *client,
+				    struct wl_listener *listener)
+{
+	wl_priv_signal_add(&client->destroy_late_signal, listener);
+}
+
+WL_EXPORT struct wl_listener *
+wl_client_get_destroy_late_listener(struct wl_client *client,
+				    wl_notify_func_t notify)
+{
+	return wl_priv_signal_get(&client->destroy_late_signal, notify);
+}
+
 WL_EXPORT void
 wl_client_destroy(struct wl_client *client)
 {
@@ -890,6 +929,9 @@ wl_client_destroy(struct wl_client *client)
 	wl_map_release(&client->objects);
 	wl_event_source_remove(client->source);
 	close(wl_connection_destroy(client->connection));
+
+	wl_priv_signal_final_emit(&client->destroy_late_signal, client);
+
 	wl_list_remove(&client->link);
 	wl_list_remove(&client->resource_created_signal.listener_list);
 	free(client);
