@@ -40,7 +40,7 @@
 
 struct client_destroy_listener {
 	struct wl_listener listener;
-	int done;
+	bool done;
 };
 
 static void
@@ -49,7 +49,7 @@ client_destroy_notify(struct wl_listener *l, void *data)
 	struct client_destroy_listener *listener =
 		wl_container_of(l, listener, listener);
 
-	listener->done = 1;
+	listener->done = true;
 }
 
 TEST(client_destroy_listener)
@@ -66,14 +66,14 @@ TEST(client_destroy_listener)
 	assert(client);
 
 	a.listener.notify = client_destroy_notify;
-	a.done = 0;
+	a.done = false;
 	wl_client_add_destroy_listener(client, &a.listener);
 
 	assert(wl_client_get_destroy_listener(client, client_destroy_notify) ==
 	       &a.listener);
 
 	b.listener.notify = client_destroy_notify;
-	b.done = 0;
+	b.done = false;
 	wl_client_add_destroy_listener(client, &b.listener);
 
 	wl_list_remove(&a.listener.link);
