@@ -1635,7 +1635,7 @@ wl_display_add_socket_auto(struct wl_display *display)
 {
 	struct wl_socket *s;
 	int displayno = 0;
-	char display_name[16] = "";
+	char display_name[20] = "";
 
 	/* A reasonable number of maximum default sockets. If
 	 * you need more than this, use the explicit add_socket API. */
