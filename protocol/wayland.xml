@@ -2861,6 +2861,8 @@
     <enum name="error">
       <entry name="bad_surface" value="0"
 	     summary="the to-be sub-surface is invalid"/>
+      <entry name="bad_parent" value="1"
+	     summary="the to-be sub-surface parent is invalid"/>
     </enum>
 
     <request name="get_subsurface">
@@ -2877,6 +2879,10 @@
 	parent (see wl_surface.commit). The effect of adding a sub-surface
 	becomes visible on the next time the state of the parent surface is
 	applied.
+
+	The parent surface must not be one of the child surface's descendants,
+	and the parent must be different from the child surface, otherwise the
+	bad_parent protocol error is raised.
 
 	This request modifies the behaviour of wl_surface.commit request on
 	the sub-surface, see the documentation on wl_subsurface interface.
