@@ -2870,8 +2870,8 @@
 	plain wl_surface into a sub-surface.
 
 	The to-be sub-surface must not already have another role, and it
-	must not have an existing wl_subsurface object. Otherwise a protocol
-	error is raised.
+	must not have an existing wl_subsurface object. Otherwise the
+	bad_surface protocol error is raised.
 
 	Adding sub-surfaces to a parent is a double-buffered operation on the
 	parent (see wl_surface.commit). The effect of adding a sub-surface
