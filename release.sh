@@ -33,19 +33,25 @@ if [ "$version" = "$prev_version" ]; then
 	exit 1
 fi
 
+name="$(meson introspect "$build_dir" --projectinfo | jq -r .descriptive_name)"
+if [ "$name" = "" ]; then
+	echo "Cannot determine project name"
+	exit 1
+fi
+
 ninja -C "$build_dir" dist
 
-archive_name="wayland-$version.tar.xz"
+archive_name="$name-$version.tar.xz"
 archive_path="$build_dir/meson-dist/$archive_name"
 gpg --detach-sig "$archive_path"
 
 sha256="$(cd $build_dir/meson-dist && sha256sum $archive_name)"
 sha512="$(cd $build_dir/meson-dist && sha512sum $archive_name)"
-archive_url="https://gitlab.freedesktop.org/wayland/wayland/-/releases/$version/downloads/$archive_name"
-announce_path="$build_dir/meson-dist/wayland-$version-announce.eml"
+archive_url="https://gitlab.freedesktop.org/wayland/$name/-/releases/$version/downloads/$archive_name"
+announce_path="$build_dir/meson-dist/$name-$version-announce.eml"
 cat >"$announce_path" <<EOF
 To: <wayland-devel@lists.freedesktop.org>
-Subject: [ANNOUNCE] wayland $version
+Subject: [ANNOUNCE] $name $version
 
 `git shortlog --no-merges "$prev_version.."`
 
@@ -59,7 +65,7 @@ EOF
 
 echo "Release announcement written to $announce_path"
 
-echo -n "Release wayland $version? [y/N] "
+echo -n "Release $name $version? [y/N] "
 read answer
 if [ "$answer" != "y" ]; then
 	exit 1
