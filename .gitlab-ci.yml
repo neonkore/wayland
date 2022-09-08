@@ -41,7 +41,7 @@
 # API changes. If you need new features from ci-templates you must bump
 # this to the current SHA you require from the ci-templates repo, however
 # be aware that you may need to account for API changes when doing so.
-.templates_sha: &template_sha 567700e483aabed992d0a4fea84994a0472deff6 # see https://docs.gitlab.com/ee/ci/yaml/#includefile
+.templates_sha: &template_sha d5aa3941aa03c2f716595116354fb81eb8012acb # see https://docs.gitlab.com/ee/ci/yaml/#includefile
 
 include:
   - project: 'freedesktop/ci-templates'
@@ -72,12 +72,12 @@ stages:
 .os-debian:
   variables:
     BUILD_OS: debian
-    FDO_DISTRIBUTION_VERSION: buster
+    FDO_DISTRIBUTION_VERSION: bullseye
     FDO_DISTRIBUTION_PACKAGES: 'build-essential pkg-config libexpat1-dev libffi-dev libxml2-dev doxygen graphviz xmlto xsltproc docbook-xsl python3-pip python3-setuptools ninja-build'
     FDO_DISTRIBUTION_EXEC: 'pip3 install meson==0.56.0'
     # bump this tag every time you change something which requires rebuilding the
     # base image
-    FDO_DISTRIBUTION_TAG: "2022-02-05.0"
+    FDO_DISTRIBUTION_TAG: "2022-08-08.0"
 
 .debian-x86_64:
   extends:
@@ -301,11 +301,11 @@ armv7-release-debian-build:
 .os-freebsd:
   variables:
     BUILD_OS: freebsd
-    FDO_DISTRIBUTION_VERSION: "13.0"
+    FDO_DISTRIBUTION_VERSION: "13.1"
     FDO_DISTRIBUTION_PACKAGES: 'libxslt meson ninja pkgconf expat libffi libepoll-shim libxml2'
     # bump this tag every time you change something which requires rebuilding the
     # base image
-    FDO_DISTRIBUTION_TAG: "2021-08-05.0"
+    FDO_DISTRIBUTION_TAG: "2022-09-08.0"
     # Don't build documentation since installing the required tools massively
     # increases the VM image (and therefore container) size.
     MESON_ARGS: "-Ddocumentation=false"
