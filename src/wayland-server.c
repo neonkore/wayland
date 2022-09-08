@@ -1150,7 +1150,6 @@ wl_socket_alloc(void)
 /** Destroy Wayland display object.
  *
  * \param display The Wayland display object which should be destroyed.
- * \return None.
  *
  * This function emits the wl_display destroy signal, releases
  * all the sockets added to this display, free's all the globals associated
@@ -1193,7 +1192,6 @@ wl_display_destroy(struct wl_display *display)
  * \param display The Wayland display object.
  * \param filter  The global filter function.
  * \param data User data to be associated with the global filter.
- * \return None.
  *
  * Set a filter for the wl_display to advertise or hide global objects
  * to clients.
