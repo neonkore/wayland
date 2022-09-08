@@ -156,6 +156,8 @@ armv7-debian-container_prep:
 .build-env:
   variables:
     MESON_BUILD_TYPE: "-Dbuildtype=debug -Doptimization=0 -Db_sanitize=address,undefined"
+    # See https://gitlab.freedesktop.org/wayland/wayland/-/merge_requests/154
+    ASAN_OPTIONS: "detect_odr_violation=0"
   before_script:
     - export BUILD_ID="wayland-$CI_JOB_NAME"
     - export PREFIX="${CI_PROJECT_DIR}/prefix-${BUILD_ID}"
@@ -191,7 +193,7 @@ armv7-debian-container_prep:
     # for every single subtest. For now, in order to get AArch64 builds and
     # tests into CI, just assume that we're not going to leak any more on
     # AArch64 than we would on ARMv7 or x86-64.
-    ASAN_OPTIONS: "detect_leaks=0"
+    ASAN_OPTIONS: "detect_leaks=0,detect_odr_violation=0"
   tags:
     - aarch64
   needs:
