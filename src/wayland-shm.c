@@ -109,7 +109,7 @@ shm_pool_grow_mapping(struct wl_shm_pool *pool)
 	data = wl_os_mremap_maymove(pool->mmap_fd, pool->data, &pool->size,
 				    pool->new_size, pool->mmap_prot,
 				    pool->mmap_flags);
-	if (pool->size != 0) {
+	if (pool->size != 0 && pool->resource != NULL) {
 		wl_resource_post_error(pool->resource,
 				       WL_SHM_ERROR_INVALID_FD,
 				       "leaked old mapping");
@@ -128,9 +128,10 @@ shm_pool_finish_resize(struct wl_shm_pool *pool)
 
 	data = shm_pool_grow_mapping(pool);
 	if (data == MAP_FAILED) {
-		wl_resource_post_error(pool->resource,
-				       WL_SHM_ERROR_INVALID_FD,
-				       "failed mremap");
+		if (pool->resource != NULL)
+			wl_resource_post_error(pool->resource,
+					       WL_SHM_ERROR_INVALID_FD,
+					       "failed mremap");
 		return;
 	}
 
@@ -260,6 +261,7 @@ destroy_pool(struct wl_resource *resource)
 {
 	struct wl_shm_pool *pool = wl_resource_get_user_data(resource);
 
+	pool->resource = NULL;
 	shm_pool_unref(pool, false);
 }
 
