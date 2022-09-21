@@ -630,8 +630,9 @@
     <event name="source_actions" since="3">
       <description summary="notify the source-side available actions">
 	This event indicates the actions offered by the data source. It
-	will be sent right after wl_data_device.enter, or anytime the source
-	side changes its offered actions through wl_data_source.set_actions.
+	will be sent immediately after creating the wl_data_offer object,
+	or anytime the source side changes its offered actions through
+	wl_data_source.set_actions.
       </description>
       <arg name="source_actions" type="uint" summary="actions offered by the data source"
 	   enum="wl_data_device_manager.dnd_action"/>
