@@ -2938,12 +2938,10 @@
       synchronized mode, and then assume that all its child and grand-child
       sub-surfaces are synchronized, too, without explicitly setting them.
 
-      If the wl_surface associated with the wl_subsurface is destroyed, the
-      wl_subsurface object becomes inert. Note, that destroying either object
-      takes effect immediately. If you need to synchronize the removal
-      of a sub-surface to the parent surface update, unmap the sub-surface
-      first by attaching a NULL wl_buffer, update parent, and then destroy
-      the sub-surface.
+      Destroying a sub-surface takes effect immediately. If you need to
+      synchronize the removal of a sub-surface to the parent surface update,
+      unmap the sub-surface first by attaching a NULL wl_buffer, update parent,
+      and then destroy the sub-surface.
 
       If the parent wl_surface object is destroyed, the sub-surface is
       unmapped.
