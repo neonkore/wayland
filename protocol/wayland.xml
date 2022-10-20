@@ -2961,8 +2961,7 @@
 	The sub-surface interface is removed from the wl_surface object
 	that was turned into a sub-surface with a
 	wl_subcompositor.get_subsurface request. The wl_surface's association
-	to the parent is deleted, and the wl_surface loses its role as
-	a sub-surface. The wl_surface is unmapped immediately.
+	to the parent is deleted. The wl_surface is unmapped immediately.
       </description>
     </request>
 
