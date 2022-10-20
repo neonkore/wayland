@@ -874,11 +874,8 @@
 	a drag-and-drop icon. If the icon surface already has another role,
 	it raises a protocol error.
 
-	The current and pending input regions of the icon wl_surface are
-	cleared, and wl_surface.set_input_region is ignored until the
-	wl_surface is no longer used as the icon surface. When the use
-	as an icon ends, the current and pending input regions become
-	undefined, and the wl_surface is unmapped.
+	The input region is ignored for wl_surfaces with the role of a
+	drag-and-drop icon.
       </description>
       <arg name="source" type="object" interface="wl_data_source" allow-null="true" summary="data source for the eventual transfer"/>
       <arg name="origin" type="object" interface="wl_surface" summary="surface where the drag originates"/>
@@ -2004,11 +2001,9 @@
 	pointer surface to this request with new values for hotspot_x
 	and hotspot_y.
 
-	The current and pending input regions of the wl_surface are
-	cleared, and wl_surface.set_input_region is ignored until the
-	wl_surface is no longer used as the cursor. When the use as a
-	cursor ends, the current and pending input regions become
-	undefined, and the wl_surface is unmapped.
+	The input region is ignored for wl_surfaces with the role of
+	a cursor. When the use as a cursor ends, the wl_surface is
+	unmapped.
 
 	The serial parameter must match the latest wl_pointer.enter
 	serial number sent to the client. Otherwise the request will be
