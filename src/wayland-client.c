@@ -301,6 +301,22 @@ wl_event_queue_release(struct wl_event_queue *queue)
 {
 	struct wl_closure *closure;
 
+	if (!wl_list_empty(&queue->proxy_list)) {
+		struct wl_proxy *proxy, *tmp;
+
+		wl_log("warning: queue %p destroyed while proxies still "
+		       "attached:\n", queue);
+
+		wl_list_for_each_safe(proxy, tmp, &queue->proxy_list,
+				      queue_link) {
+			wl_log("  %s@%u still attached\n",
+			       proxy->object.interface->name,
+			       proxy->object.id);
+			wl_list_remove(&proxy->queue_link);
+			wl_list_init(&proxy->queue_link);
+		}
+	}
+
 	while (!wl_list_empty(&queue->event_list)) {
 		closure = wl_container_of(queue->event_list.next,
 					  closure, link);

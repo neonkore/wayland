@@ -23,11 +23,14 @@
  * SOFTWARE.
  */
 
+#define _GNU_SOURCE /* For memrchr */
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 #include <unistd.h>
+#include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <assert.h>
@@ -303,6 +306,84 @@ client_test_queue_set_queue_race(void)
 	wl_display_disconnect(display);
 }
 
+static char *
+map_file(int fd, size_t *len)
+{
+	char *data;
+
+	*len = lseek(fd, 0, SEEK_END);
+	data = mmap(0, *len, PROT_READ, MAP_PRIVATE, fd, 0);
+	assert(data != MAP_FAILED && "Failed to mmap file");
+
+	return data;
+}
+
+static char *
+last_line_of(char *s)
+{
+	size_t len = strlen(s);
+	char *last;
+
+	last = memrchr(s, '\n', len);
+	/* If we found a newline at end of string, find the previous one. */
+	if (last && last[1] == 0)
+		last = memrchr(s, '\n', len - 1);
+	/* If we have a newline, the last line starts after the newline.
+	 * Otherwise, the whole string is the last line. */
+	if (last)
+		last += 1;
+	else
+		last = s;
+
+	return last;
+}
+
+static void
+client_test_queue_destroy_with_attached_proxies(void)
+{
+	struct wl_event_queue *queue;
+	struct wl_display *display;
+	struct wl_display *display_wrapper;
+	struct wl_callback *callback;
+	char *log;
+	size_t log_len;
+	char callback_name[24];
+	int ret;
+
+	display = wl_display_connect(NULL);
+	assert(display);
+
+	/* Pretend we are in a separate thread where a thread-local queue is
+	 * used. */
+	queue = wl_display_create_queue(display);
+	assert(queue);
+
+	/* Create a sync dispatching events on the thread-local queue. */
+	display_wrapper = wl_proxy_create_wrapper(display);
+	assert(display_wrapper);
+	wl_proxy_set_queue((struct wl_proxy *) display_wrapper, queue);
+	callback = wl_display_sync(display_wrapper);
+	wl_proxy_wrapper_destroy(display_wrapper);
+	assert(callback != NULL);
+
+	/* Destroy the queue before the attached object. */
+	wl_event_queue_destroy(queue);
+
+	/* Check that the log contains some information about the attached
+	 * wl_callback proxy. */
+	log = map_file(client_log_fd, &log_len);
+	ret = snprintf(callback_name, sizeof(callback_name), "wl_callback@%u",
+		       wl_proxy_get_id((struct wl_proxy *) callback));
+	assert(ret > 0 && ret < (int)sizeof(callback_name) &&
+	       "callback name creation failed (possibly truncated)");
+	assert(strstr(last_line_of(log), callback_name));
+	munmap(log, log_len);
+
+	wl_callback_destroy(callback);
+
+	wl_display_disconnect(display);
+}
+
 static void
 dummy_bind(struct wl_client *client,
 	   void *data, uint32_t version, uint32_t id)
@@ -378,6 +459,18 @@ TEST(queue_set_queue_race)
 	test_set_timeout(2);
 
 	client_create_noarg(d, client_test_queue_set_queue_race);
+	display_run(d);
+
+	display_destroy(d);
+}
+
+TEST(queue_destroy_with_attached_proxies)
+{
+	struct display *d = display_create();
+
+	test_set_timeout(2);
+
+	client_create_noarg(d, client_test_queue_destroy_with_attached_proxies);
 	display_run(d);
 
 	display_destroy(d);
