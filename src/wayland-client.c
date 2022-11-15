@@ -70,10 +70,12 @@ struct wl_proxy {
 	wl_dispatcher_func_t dispatcher;
 	uint32_t version;
 	const char * const *tag;
+	struct wl_list queue_link; /**< in struct wl_event_queue::proxy_list */
 };
 
 struct wl_event_queue {
 	struct wl_list event_list;
+	struct wl_list proxy_list; /**< struct wl_proxy::queue_link */
 	struct wl_display *display;
 };
 
@@ -221,6 +223,7 @@ static void
 wl_event_queue_init(struct wl_event_queue *queue, struct wl_display *display)
 {
 	wl_list_init(&queue->event_list);
+	wl_list_init(&queue->proxy_list);
 	queue->display = display;
 }
 
@@ -435,6 +438,8 @@ proxy_create(struct wl_proxy *factory, const struct wl_interface *interface,
 		return NULL;
 	}
 
+	wl_list_insert(&proxy->queue->proxy_list, &proxy->queue_link);
+
 	return proxy;
 }
 
@@ -494,6 +499,8 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 		return NULL;
 	}
 
+	wl_list_insert(&proxy->queue->proxy_list, &proxy->queue_link);
+
 	return proxy;
 }
 
@@ -517,6 +524,9 @@ proxy_destroy(struct wl_proxy *proxy)
 	}
 
 	proxy->flags |= WL_PROXY_FLAG_DESTROYED;
+
+	wl_list_remove(&proxy->queue_link);
+	wl_list_init(&proxy->queue_link);
 
 	wl_proxy_unref(proxy);
 }
@@ -2335,12 +2345,16 @@ wl_proxy_set_queue(struct wl_proxy *proxy, struct wl_event_queue *queue)
 {
 	pthread_mutex_lock(&proxy->display->mutex);
 
+	wl_list_remove(&proxy->queue_link);
+
 	if (queue) {
 		assert(proxy->display == queue->display);
 		proxy->queue = queue;
 	} else {
 		proxy->queue = &proxy->display->default_queue;
 	}
+
+	wl_list_insert(&proxy->queue->proxy_list, &proxy->queue_link);
 
 	pthread_mutex_unlock(&proxy->display->mutex);
 }
@@ -2413,6 +2427,8 @@ wl_proxy_create_wrapper(void *proxy)
 	wrapper->flags = WL_PROXY_FLAG_WRAPPER;
 	wrapper->refcount = 1;
 
+	wl_list_insert(&wrapper->queue->proxy_list, &wrapper->queue_link);
+
 	pthread_mutex_unlock(&wrapped_proxy->display->mutex);
 
 	return wrapper;
@@ -2433,6 +2449,12 @@ wl_proxy_wrapper_destroy(void *proxy_wrapper)
 			 "wl_proxy_wrapper_destroy\n");
 
 	assert(wrapper->refcount == 1);
+
+	pthread_mutex_lock(&wrapper->display->mutex);
+
+	wl_list_remove(&wrapper->queue_link);
+
+	pthread_mutex_unlock(&wrapper->display->mutex);
 
 	free(wrapper);
 }
