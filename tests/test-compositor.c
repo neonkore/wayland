@@ -114,7 +114,7 @@ handle_client_destroy(void *data)
 	case CLD_DUMPED:
 		fprintf(stderr, "Client '%s' was killed by signal %d\n",
 			ci->name, status.si_status);
-		ci->exit_code = status.si_status;
+		ci->kill_code = status.si_status;
 		break;
 	case CLD_EXITED:
 		if (status.si_status != EXIT_SUCCESS)
@@ -425,8 +425,10 @@ display_resume(struct display *d)
 	wl_display_run(d->wl_display);
 }
 
+/* If signum is 0, expect a successful client exit, otherwise
+ * expect the client to have been killed by that signal. */
 void
-display_destroy(struct display *d)
+display_destroy_expect_signal(struct display *d, int signum)
 {
 	struct client_info *cl, *next;
 	int failed = 0;
@@ -437,7 +439,15 @@ display_destroy(struct display *d)
 	wl_list_for_each_safe(cl, next, &d->clients, link) {
 		assert(cl->wl_client == NULL);
 
-		if (cl->exit_code != 0) {
+		if (signum != 0 && cl->kill_code != signum) {
+			++failed;
+			fprintf(stderr,
+				"Client '%s' failed, expecting signal %d, "
+				"got %d\n",
+				cl->name, signum, cl->kill_code);
+		}
+		else if (signum == 0 &&
+			 (cl->kill_code != 0 || cl->exit_code != 0)) {
 			++failed;
 			fprintf(stderr, "Client '%s' failed\n", cl->name);
 		}
@@ -455,6 +465,12 @@ display_destroy(struct display *d)
 		fprintf(stderr, "%d child(ren) failed\n", failed);
 		abort();
 	}
+}
+
+void
+display_destroy(struct display *d)
+{
+	display_destroy_expect_signal(d, 0);
 }
 
 /*

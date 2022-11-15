@@ -40,6 +40,7 @@ struct client_info {
 	int pipe;
 	pid_t pid;
 	int exit_code;
+	int kill_code;
 
 	struct wl_list link;
 	void *data; /* for arbitrary use */
@@ -91,6 +92,7 @@ void noop_request(struct client *);
  */
 struct display *display_create(void);
 void display_destroy(struct display *d);
+void display_destroy_expect_signal(struct display *d, int signum);
 void display_run(struct display *d);
 
 /* This function posts the display_resumed event to all waiting clients,
