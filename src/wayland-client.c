@@ -312,6 +312,7 @@ wl_event_queue_release(struct wl_event_queue *queue)
 			wl_log("  %s@%u still attached\n",
 			       proxy->object.interface->name,
 			       proxy->object.id);
+			proxy->queue = NULL;
 			wl_list_remove(&proxy->queue_link);
 			wl_list_init(&proxy->queue_link);
 		}
@@ -541,6 +542,7 @@ proxy_destroy(struct wl_proxy *proxy)
 
 	proxy->flags |= WL_PROXY_FLAG_DESTROYED;
 
+	proxy->queue = NULL;
 	wl_list_remove(&proxy->queue_link);
 	wl_list_init(&proxy->queue_link);
 
@@ -1563,6 +1565,9 @@ queue_event(struct wl_display *display, int len)
 		queue = &display->display_queue;
 	else
 		queue = proxy->queue;
+
+	if (!queue)
+		wl_abort("Tried to add event to destroyed queue\n");
 
 	wl_list_insert(queue->event_list.prev, &closure->link);
 

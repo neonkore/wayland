@@ -34,6 +34,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <assert.h>
+#include <signal.h>
 
 #include "wayland-client.h"
 #include "wayland-server.h"
@@ -385,6 +386,43 @@ client_test_queue_destroy_with_attached_proxies(void)
 }
 
 static void
+client_test_queue_proxy_event_to_destroyed_queue(void)
+{
+	struct wl_event_queue *queue;
+	struct wl_display *display;
+	struct wl_display *display_wrapper;
+	struct wl_callback *callback;
+
+	display = wl_display_connect(NULL);
+	assert(display);
+
+	/* Pretend we are in a separate thread where a thread-local queue is
+	 * used. */
+	queue = wl_display_create_queue(display);
+	assert(queue);
+
+	/* Create a sync dispatching events on the thread-local queue. */
+	display_wrapper = wl_proxy_create_wrapper(display);
+	assert(display_wrapper);
+	wl_proxy_set_queue((struct wl_proxy *) display_wrapper, queue);
+	callback = wl_display_sync(display_wrapper);
+	wl_proxy_wrapper_destroy(display_wrapper);
+	assert(callback != NULL);
+	wl_display_flush(display);
+
+	/* Destroy the queue before the attached object. */
+	wl_event_queue_destroy(queue);
+
+	/* During this roundtrip we should receive the done event on 'callback',
+	 * try to queue it to the destroyed queue, and abort. */
+	wl_display_roundtrip(display);
+
+	wl_callback_destroy(callback);
+
+	wl_display_disconnect(display);
+}
+
+static void
 dummy_bind(struct wl_client *client,
 	   void *data, uint32_t version, uint32_t id)
 {
@@ -474,4 +512,27 @@ TEST(queue_destroy_with_attached_proxies)
 	display_run(d);
 
 	display_destroy(d);
+}
+
+TEST(queue_proxy_event_to_destroyed_queue)
+{
+	struct display *d = display_create();
+	struct client_info *ci;
+	char *client_log;
+	size_t client_log_len;
+
+	test_set_timeout(2);
+
+	ci = client_create_noarg(d, client_test_queue_proxy_event_to_destroyed_queue);
+	display_run(d);
+
+	/* Check that the final line in the log mentions the expected reason
+	 * for the abort. */
+	client_log = map_file(ci->log_fd, &client_log_len);
+	assert(!strcmp(last_line_of(client_log),
+		       "Tried to add event to destroyed queue\n"));
+	munmap(client_log, client_log_len);
+
+	/* Check that the client aborted. */
+	display_destroy_expect_signal(d, SIGABRT);
 }
