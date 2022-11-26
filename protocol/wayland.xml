@@ -1810,6 +1810,19 @@
       </description>
       <arg name="factor" type="int" summary="preferred scaling factor"/>
     </event>
+
+    <event name="preferred_buffer_transform" since="6">
+      <description summary="preferred buffer transform for the surface">
+	This event indicates the preferred buffer transform for this surface.
+	It is sent whenever the compositor's preference changes.
+
+	It is intended that transform aware clients use this event to apply the
+	transform to their content and use wl_surface.set_buffer_transform to
+	indicate the transform they have rendered with.
+      </description>
+      <arg name="transform" type="uint" enum="wl_output.transform"
+	   summary="preferred transform"/>
+    </event>
    </interface>
 
   <interface name="wl_seat" version="8">
