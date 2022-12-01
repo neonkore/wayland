@@ -40,6 +40,8 @@
 #include "test-runner.h"
 #include "test-compositor.h"
 
+int client_log_fd = -1;
+
 /* --- Protocol --- */
 struct test_compositor;
 
@@ -156,8 +158,20 @@ client_destroyed(struct wl_listener *listener, void *data)
 }
 
 static void
+client_log_handler(const char *fmt, va_list arg)
+{
+	va_list arg_copy;
+
+	va_copy(arg_copy, arg);
+	vdprintf(client_log_fd, fmt, arg_copy);
+	va_end(arg_copy);
+
+	vfprintf(stderr, fmt, arg);
+}
+
+static void
 run_client(void (*client_main)(void *data), void *data,
-	   int wayland_sock, int client_pipe)
+	   int wayland_sock, int client_pipe, int log_fd)
 {
 	char s[8];
 	int cur_fds;
@@ -172,6 +186,10 @@ run_client(void (*client_main)(void *data), void *data,
 	/* for wl_display_connect() */
 	snprintf(s, sizeof s, "%d", wayland_sock);
 	setenv("WAYLAND_SOCKET", s, 0);
+
+	/* Capture the log to the specified file descriptor. */
+	client_log_fd = log_fd;
+	wl_log_set_handler_client(client_log_handler);
 
 	cur_fds = count_open_fds();
 
@@ -188,6 +206,18 @@ run_client(void (*client_main)(void *data), void *data,
 	check_fd_leaks(cur_fds);
 }
 
+static int
+create_log_fd(void)
+{
+	char logname[] = "/tmp/wayland-tests-log-XXXXXX";
+	int log_fd = mkstemp(logname);
+
+	if (log_fd >= 0)
+		unlink(logname);
+
+	return log_fd;
+}
+
 static struct client_info *
 display_create_client(struct display *d,
 		      void (*client_main)(void *data),
@@ -199,10 +229,14 @@ display_create_client(struct display *d,
 	pid_t pid;
 	int can_continue = 0;
 	struct client_info *cl;
+	int log_fd;
 
 	assert(pipe(pipe_cli) == 0 && "Failed creating pipe");
 	assert(socketpair(AF_UNIX, SOCK_STREAM, 0, sock_wayl) == 0
 	       && "Failed creating socket pair");
+
+	log_fd = create_log_fd();
+	assert(log_fd >= 0 && "Failed to create log fd");
 
 	pid = fork();
 	assert(pid != -1 && "Fork failed");
@@ -211,10 +245,11 @@ display_create_client(struct display *d,
 		close(sock_wayl[1]);
 		close(pipe_cli[1]);
 
-		run_client(client_main, data, sock_wayl[0], pipe_cli[0]);
+		run_client(client_main, data, sock_wayl[0], pipe_cli[0], log_fd);
 
 		close(sock_wayl[0]);
 		close(pipe_cli[0]);
+		close(log_fd);
 
 		exit(0);
 	}
@@ -231,6 +266,7 @@ display_create_client(struct display *d,
 	cl->name = name;
 	cl->pid = pid;
 	cl->pipe = pipe_cli[1];
+	cl->log_fd = log_fd;
 	cl->destroy_listener.notify = &client_destroyed;
 
 	cl->wl_client = wl_client_create(d->wl_display, sock_wayl[1]);
@@ -407,6 +443,7 @@ display_destroy(struct display *d)
 		}
 
 		close(cl->pipe);
+		close(cl->log_fd);
 		free(cl);
 	}
 

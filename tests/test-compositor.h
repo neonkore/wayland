@@ -43,6 +43,7 @@ struct client_info {
 
 	struct wl_list link;
 	void *data; /* for arbitrary use */
+	int log_fd;
 };
 
 struct display {
@@ -106,6 +107,9 @@ void display_post_resume_events(struct display *d);
  * it then reruns the display. */
 void display_resume(struct display *d);
 
+/* The file descriptor containing the client log. This is only valid in the
+ * test client processes. */
+extern int client_log_fd;
 
 struct client_info *client_create_with_name(struct display *d,
 					    void (*client_main)(void *data),
