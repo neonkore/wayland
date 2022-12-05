@@ -177,6 +177,9 @@
     <description summary="callback object">
       Clients can handle the 'done' event to get notified when
       the related request is done.
+
+      Note, because wl_callback objects are created from multiple independent
+      factory interfaces, the wl_callback interface is frozen at version 1.
     </description>
 
     <event name="done" type="destructor">
@@ -453,6 +456,9 @@
       If the buffer uses a format that has an alpha channel, the alpha channel
       is assumed to be premultiplied in the color channels unless otherwise
       specified.
+
+      Note, because wl_buffer objects are created from multiple independent
+      factory interfaces, the wl_buffer interface is frozen at version 1.
     </description>
 
     <request name="destroy" type="destructor">
