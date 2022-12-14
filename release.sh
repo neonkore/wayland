@@ -49,6 +49,9 @@ sha256="$(cd $build_dir/meson-dist && sha256sum $archive_name)"
 sha512="$(cd $build_dir/meson-dist && sha512sum $archive_name)"
 archive_url="https://gitlab.freedesktop.org/wayland/$name/-/releases/$version/downloads/$archive_name"
 announce_path="$build_dir/meson-dist/$name-$version-announce.eml"
+current_branch=$(git branch --show-current)
+remote_name=$(git config --get branch.${current_branch}.remote)
+
 cat >"$announce_path" <<EOF
 To: <wayland-devel@lists.freedesktop.org>
 Subject: [ANNOUNCE] $name $version
@@ -72,5 +75,5 @@ if [ "$answer" != "y" ]; then
 fi
 
 git tag -s -m "$version" "$version"
-git push --tags
+git push "$remote_name" "$version"
 glab release create "$version" "$archive_path"* --notes ""
