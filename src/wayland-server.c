@@ -1285,6 +1285,11 @@ wl_global_create(struct wl_display *display,
 		return NULL;
 	}
 
+	if (display->id >= UINT32_MAX) {
+		wl_log("wl_global_create: ran out of global names\n");
+		return NULL;
+	}
+
 	global = zalloc(sizeof *global);
 	if (global == NULL)
 		return NULL;
