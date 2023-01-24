@@ -91,7 +91,7 @@ struct wl_display {
 	struct wl_event_loop *loop;
 	int run;
 
-	uint32_t id;
+	uint32_t next_global_name;
 	uint32_t serial;
 
 	struct wl_list registry_resource_list;
@@ -1139,7 +1139,7 @@ wl_display_create(void)
 	wl_priv_signal_init(&display->destroy_signal);
 	wl_priv_signal_init(&display->create_client_signal);
 
-	display->id = 1;
+	display->next_global_name = 1;
 	display->serial = 0;
 
 	display->global_filter = NULL;
@@ -1285,7 +1285,7 @@ wl_global_create(struct wl_display *display,
 		return NULL;
 	}
 
-	if (display->id >= UINT32_MAX) {
+	if (display->next_global_name >= UINT32_MAX) {
 		wl_log("wl_global_create: ran out of global names\n");
 		return NULL;
 	}
@@ -1295,7 +1295,7 @@ wl_global_create(struct wl_display *display,
 		return NULL;
 
 	global->display = display;
-	global->name = display->id++;
+	global->name = display->next_global_name++;
 	global->interface = interface;
 	global->version = version;
 	global->data = data;
