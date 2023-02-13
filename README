@@ -17,10 +17,6 @@ protocol does not handle rendering, which is one of the features that
 makes wayland so simple.  All clients are expected to handle rendering
 themselves, typically through cairo or OpenGL.
 
-The weston compositor is a reference implementation of a wayland
-compositor and the weston repository also includes a few example
-clients.
-
 Building the wayland libraries is fairly simple, aside from libffi,
 they don't have many dependencies:
 
