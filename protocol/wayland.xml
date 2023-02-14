@@ -1442,8 +1442,9 @@
 
 	When the bound wl_surface version is 5 or higher, passing any
 	non-zero x or y is a protocol violation, and will result in an
-	'invalid_offset' error being raised. To achieve equivalent semantics,
-	use wl_surface.offset.
+        'invalid_offset' error being raised. The x and y arguments are ignored
+        and do not change the pending state. To achieve equivalent semantics,
+        use wl_surface.offset.
 
 	Surface contents are double-buffered state, see wl_surface.commit.
 
