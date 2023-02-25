@@ -54,15 +54,6 @@ tests_protocol_c = custom_target(
 	output: 'tests-protocol.c'
 )
 
-benchmark(
-	'fixed-benchmark',
-	executable(
-		'fixed-benchmark',
-		'fixed-benchmark.c',
-		dependencies: [ test_runner_dep, rt_dep ]
-	)
-)
-
 executable(
 	'exec-fd-leak-checker',
 	'exec-fd-leak-checker.c',
