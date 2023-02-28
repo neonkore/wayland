@@ -308,12 +308,22 @@ client_test_queue_set_queue_race(void)
 }
 
 static char *
-map_file(int fd, size_t *len)
+maybe_map_file(int fd, size_t *len)
 {
 	char *data;
 
 	*len = lseek(fd, 0, SEEK_END);
 	data = mmap(0, *len, PROT_READ, MAP_PRIVATE, fd, 0);
+
+	return data;
+}
+
+static char *
+map_file(int fd, size_t *len)
+{
+	char *data;
+
+	data = maybe_map_file(fd, len);
 	assert(data != MAP_FAILED && "Failed to mmap file");
 
 	return data;
@@ -420,6 +430,45 @@ client_test_queue_proxy_event_to_destroyed_queue(void)
 	wl_callback_destroy(callback);
 
 	wl_display_disconnect(display);
+}
+
+static void
+client_test_queue_destroy_default_with_attached_proxies(void)
+{
+	struct wl_display *display;
+	struct wl_callback *callback;
+	char *log;
+	size_t log_len;
+	char callback_name[24];
+	int ret;
+
+	display = wl_display_connect(NULL);
+	assert(display);
+
+	/* Create a sync dispatching events on the default queue. */
+	callback = wl_display_sync(display);
+	assert(callback != NULL);
+
+	/* Destroy the default queue (by disconnecting) before the attached
+	 * object. */
+	wl_display_disconnect(display);
+
+	/* Check that the log does not contain any warning about the attached
+	 * wl_callback proxy. */
+	log = maybe_map_file(client_log_fd, &log_len);
+	ret = snprintf(callback_name, sizeof(callback_name), "wl_callback@%u",
+		       wl_proxy_get_id((struct wl_proxy *) callback));
+	assert(ret > 0 && ret < (int)sizeof(callback_name) &&
+	       "callback name creation failed (possibly truncated)");
+	assert(log == MAP_FAILED || strstr(log, callback_name) == NULL);
+	if (log != MAP_FAILED)
+		munmap(log, log_len);
+
+	/* HACK: Directly free the memory of the wl_callback proxy to appease
+	 * ASan. We would normally use wl_callback_destroy(), but since we have
+	 * destroyed the associated wl_display, using this function would lead
+	 * to memory errors. */
+	free(callback);
 }
 
 static void
@@ -535,4 +584,16 @@ TEST(queue_proxy_event_to_destroyed_queue)
 
 	/* Check that the client aborted. */
 	display_destroy_expect_signal(d, SIGABRT);
+}
+
+TEST(queue_destroy_default_with_attached_proxies)
+{
+	struct display *d = display_create();
+
+	test_set_timeout(2);
+
+	client_create_noarg(d, client_test_queue_destroy_default_with_attached_proxies);
+	display_run(d);
+
+	display_destroy(d);
 }

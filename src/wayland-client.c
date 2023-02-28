@@ -304,14 +304,18 @@ wl_event_queue_release(struct wl_event_queue *queue)
 	if (!wl_list_empty(&queue->proxy_list)) {
 		struct wl_proxy *proxy, *tmp;
 
-		wl_log("warning: queue %p destroyed while proxies still "
-		       "attached:\n", queue);
+		if (queue != &queue->display->default_queue) {
+			wl_log("warning: queue %p destroyed while proxies "
+			       "still attached:\n", queue);
+		}
 
 		wl_list_for_each_safe(proxy, tmp, &queue->proxy_list,
 				      queue_link) {
-			wl_log("  %s@%u still attached\n",
-			       proxy->object.interface->name,
-			       proxy->object.id);
+			if (queue != &queue->display->default_queue) {
+				wl_log("  %s@%u still attached\n",
+				       proxy->object.interface->name,
+				       proxy->object.id);
+			}
 			proxy->queue = NULL;
 			wl_list_remove(&proxy->queue_link);
 			wl_list_init(&proxy->queue_link);
