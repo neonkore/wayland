@@ -1308,8 +1308,9 @@ wl_display_connect(const char *name)
  *
  * \param display The display context object
  *
- * Close the connection to \c display and free all resources associated
- * with it.
+ * Close the connection to \c display. The \ref wl_proxy and
+ * \ref wl_event_queue objects need to be manually destroyed by the caller
+ * before disconnecting.
  *
  * \memberof wl_display
  */
