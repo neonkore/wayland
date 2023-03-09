@@ -1082,8 +1082,10 @@ wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout)
 
 	for (i = 0; i < count; i++) {
 		source = ep[i].data.ptr;
-		if (source == &loop->timers.base)
+		if (source == &loop->timers.base) {
 			has_timers = true;
+			break;
+		}
 	}
 
 	if (has_timers) {
