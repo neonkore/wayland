@@ -971,6 +971,57 @@ wl_event_loop_dispatch_idle(struct wl_event_loop *loop)
 	}
 }
 
+static int
+timespec_to_ms(struct timespec value)
+{
+	return (value.tv_sec * 1000) + (value.tv_nsec / 1000000);
+}
+
+static struct timespec
+ms_to_timespec(int ms)
+{
+	struct timespec val;
+	val.tv_sec = ms / 1000;
+	val.tv_nsec = (ms % 1000) * 1000000;
+	return val;
+}
+
+static struct timespec
+timespec_normalize(struct timespec value)
+{
+	struct timespec result = value;
+
+	while (result.tv_nsec >= 1000000000) {
+		result.tv_nsec -= 1000000000;
+		result.tv_sec++;
+	}
+
+	while (result.tv_nsec < 0) {
+		result.tv_nsec += 1000000000;
+		result.tv_sec--;
+	}
+
+	return result;
+}
+
+static struct timespec
+timespec_add(struct timespec a, struct timespec b)
+{
+	struct timespec result;
+	result.tv_sec = a.tv_sec + b.tv_sec;
+	result.tv_nsec = a.tv_nsec + b.tv_nsec;
+	return timespec_normalize(result);
+}
+
+static struct timespec
+timespec_sub(struct timespec a, struct timespec b)
+{
+	struct timespec result;
+	result.tv_sec = a.tv_sec - b.tv_sec;
+	result.tv_nsec = a.tv_nsec - b.tv_nsec;
+	return timespec_normalize(result);
+}
+
 /** Wait for events and dispatch them
  *
  * \param loop The event loop whose sources to wait for.
@@ -998,10 +1049,34 @@ wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout)
 	struct wl_event_source *source;
 	int i, count;
 	bool has_timers = false;
+	bool use_timeout = timeout > 0;
+	struct timespec now, end;
 
 	wl_event_loop_dispatch_idle(loop);
 
-	count = epoll_wait(loop->epoll_fd, ep, ARRAY_LENGTH(ep), timeout);
+	if (use_timeout) {
+		clock_gettime(CLOCK_MONOTONIC, &now);
+		end = timespec_add(now, ms_to_timespec(timeout));
+	}
+
+	while (true) {
+		count = epoll_wait(loop->epoll_fd, ep, ARRAY_LENGTH(ep), timeout);
+		if (count >= 0)
+			break; /* have events or timeout */
+		else if (count < 0 && errno != EINTR && errno != EAGAIN)
+			break; /* have error */
+
+		if (use_timeout) {
+			clock_gettime(CLOCK_MONOTONIC, &now);
+			timeout = timespec_to_ms(timespec_sub(end, now));
+			if (timeout <= 0) {
+				/* too late */
+				count = 0;
+				break;
+			}
+		}
+	}
+
 	if (count < 0)
 		return -1;
 
