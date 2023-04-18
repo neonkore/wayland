@@ -1490,7 +1490,9 @@ wl_display_run(struct wl_display *display)
 
 	while (display->run) {
 		wl_display_flush_clients(display);
-		wl_event_loop_dispatch(display->loop, -1);
+		if (wl_event_loop_dispatch(display->loop, -1) < 0) {
+			break;
+		}
 	}
 }
 
