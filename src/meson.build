@@ -74,6 +74,9 @@ if get_option('scanner')
 
 	if meson.can_run_host_binaries()
 		meson.override_find_program('wayland-scanner', wayland_scanner)
+		meson.override_dependency('wayland-scanner', declare_dependency(
+			variables: { 'wayland_scanner': 'wayland-scanner' },
+		))
 	endif
 endif
 
