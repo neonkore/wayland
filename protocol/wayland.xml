@@ -2016,9 +2016,9 @@
 	where (x, y) are the coordinates of the pointer location, in
 	surface-local coordinates.
 
-	On surface.attach requests to the pointer surface, hotspot_x
+	On wl_surface.offset requests to the pointer surface, hotspot_x
 	and hotspot_y are decremented by the x and y parameters
-	passed to the request. Attach must be confirmed by
+	passed to the request. The offset must be applied by
 	wl_surface.commit as usual.
 
 	The hotspot can also be updated by passing the currently set
