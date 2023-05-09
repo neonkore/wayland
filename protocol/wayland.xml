@@ -469,8 +469,8 @@
       interface.
 
       If the buffer uses a format that has an alpha channel, the alpha channel
-      is assumed to be premultiplied in the color channels unless otherwise
-      specified.
+      is assumed to be premultiplied in the electrical color channel values
+      (after transfer function encoding) unless otherwise specified.
 
       Note, because wl_buffer objects are created from multiple independent
       factory interfaces, the wl_buffer interface is frozen at version 1.
