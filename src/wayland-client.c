@@ -2338,6 +2338,20 @@ wl_proxy_get_class(struct wl_proxy *proxy)
 	return proxy->object.interface->name;
 }
 
+/** Get the display of a proxy object
+ *
+ * \param proxy The proxy object
+ * \return The wl_display the proxy is associated with
+ *
+ * \memberof wl_proxy
+ * \since 1.23
+ */
+WL_EXPORT struct wl_display *
+wl_proxy_get_display(struct wl_proxy *proxy)
+{
+	return proxy->display;
+}
+
 /** Assign a proxy to an event queue
  *
  * \param proxy The proxy object
