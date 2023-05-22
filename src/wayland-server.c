@@ -83,13 +83,13 @@ struct wl_client {
 	pid_t pid;
 	uid_t uid;
 	gid_t gid;
-	int error;
+	bool error;
 	struct wl_priv_signal resource_created_signal;
 };
 
 struct wl_display {
 	struct wl_event_loop *loop;
-	int run;
+	bool run;
 
 	uint32_t next_global_name;
 	uint32_t serial;
@@ -217,7 +217,7 @@ handle_array(struct wl_resource *resource, uint32_t opcode,
 		return;
 
 	if (!verify_objects(resource, opcode, args)) {
-		resource->client->error = 1;
+		resource->client->error = true;
 		return;
 	}
 
@@ -225,14 +225,14 @@ handle_array(struct wl_resource *resource, uint32_t opcode,
 				     &object->interface->events[opcode]);
 
 	if (closure == NULL) {
-		resource->client->error = 1;
+		resource->client->error = true;
 		return;
 	}
 
 	log_closure(resource, closure, true);
 
 	if (send_func(closure, resource->client->connection))
-		resource->client->error = 1;
+		resource->client->error = true;
 
 	wl_closure_destroy(closure);
 }
@@ -303,7 +303,7 @@ wl_resource_post_error_vargs(struct wl_resource *resource,
 
 	wl_resource_post_event(client->display_resource,
 			       WL_DISPLAY_ERROR, resource, code, buffer);
-	client->error = 1;
+	client->error = true;
 
 }
 
@@ -1477,7 +1477,7 @@ wl_display_terminate(struct wl_display *display)
 	int ret;
 	uint64_t terminate = 1;
 
-	display->run = 0;
+	display->run = false;
 
 	ret = write(display->terminate_efd, &terminate, sizeof(terminate));
 	assert (ret >= 0 || errno == EAGAIN);
@@ -1486,7 +1486,7 @@ wl_display_terminate(struct wl_display *display)
 WL_EXPORT void
 wl_display_run(struct wl_display *display)
 {
-	display->run = 1;
+	display->run = true;
 
 	while (display->run) {
 		wl_display_flush_clients(display);
