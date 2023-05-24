@@ -1283,7 +1283,7 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target,
 	clock_gettime(CLOCK_REALTIME, &tp);
 	time = (tp.tv_sec * 1000000L) + (tp.tv_nsec / 1000);
 
-	fprintf(f, "[%7u.%03u] %s%s%s@%u.%s(",
+	fprintf(f, "[%7u.%03u] %s%s%s#%u.%s(",
 		time / 1000, time % 1000,
 		discarded ? "discarded " : "",
 		send ? " -> " : "",
@@ -1323,7 +1323,7 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target,
 			break;
 		case 'o':
 			if (closure->args[i].o)
-				fprintf(f, "%s@%u",
+				fprintf(f, "%s#%u",
 					closure->args[i].o->interface->name,
 					closure->args[i].o->id);
 			else
@@ -1335,7 +1335,7 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target,
 			else
 				nval = closure->args[i].n;
 
-			fprintf(f, "new id %s@",
+			fprintf(f, "new id %s#",
 				(closure->message->types[i]) ?
 				 closure->message->types[i]->name :
 				  "[unknown]");

@@ -312,7 +312,7 @@ wl_event_queue_release(struct wl_event_queue *queue)
 		wl_list_for_each_safe(proxy, tmp, &queue->proxy_list,
 				      queue_link) {
 			if (queue != &queue->display->default_queue) {
-				wl_log("  %s@%u still attached\n",
+				wl_log("  %s#%u still attached\n",
 				       proxy->object.interface->name,
 				       proxy->object.id);
 			}
@@ -1045,7 +1045,7 @@ display_handle_error(void *data,
 	const struct wl_interface *interface;
 
 	if (proxy) {
-		wl_log("%s@%u: error %d: %s\n",
+		wl_log("%s#%u: error %d: %s\n",
 		       proxy->object.interface->name,
 		       proxy->object.id,
 		       code, message);
@@ -1526,7 +1526,7 @@ queue_event(struct wl_display *display, int len)
 			clock_gettime(CLOCK_REALTIME, &tp);
 			time = (tp.tv_sec * 1000000L) + (tp.tv_nsec / 1000);
 
-			fprintf(stderr, "[%7u.%03u] discarded [%s]@%d.[event %d]"
+			fprintf(stderr, "[%7u.%03u] discarded [%s]#%d.[event %d]"
 				"(%d fd, %d byte)\n",
 				time / 1000, time % 1000,
 				zombie ? "zombie" : "unknown",

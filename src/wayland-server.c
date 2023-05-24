@@ -391,7 +391,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		if (opcode >= object->interface->method_count) {
 			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_METHOD,
-					       "invalid method %d, object %s@%u",
+					       "invalid method %d, object %s#%u",
 					       opcode,
 					       object->interface->name,
 					       object->id);
@@ -405,7 +405,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_METHOD,
 					       "invalid method %d (since %d < %d)"
-					       ", object %s@%u",
+					       ", object %s#%u",
 					       opcode, resource->version, since,
 					       object->interface->name,
 					       object->id);
@@ -423,7 +423,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 			   wl_closure_lookup_objects(closure, &client->objects) < 0) {
 			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_METHOD,
-					       "invalid arguments for %s@%u.%s",
+					       "invalid arguments for %s#%u.%s",
 					       object->interface->name,
 					       object->id,
 					       message->name);
@@ -1343,7 +1343,7 @@ wl_global_remove(struct wl_global *global)
 
 	if (global->removed)
 		wl_abort("wl_global_remove: called twice on the same "
-			 "global '%s@%"PRIu32"'", global->interface->name,
+			 "global '%s#%"PRIu32"'", global->interface->name,
 			 global->name);
 
 	wl_list_for_each(resource, &display->registry_resource_list, link)

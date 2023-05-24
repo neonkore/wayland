@@ -383,7 +383,7 @@ client_test_queue_destroy_with_attached_proxies(void)
 	/* Check that the log contains some information about the attached
 	 * wl_callback proxy. */
 	log = map_file(client_log_fd, &log_len);
-	ret = snprintf(callback_name, sizeof(callback_name), "wl_callback@%u",
+	ret = snprintf(callback_name, sizeof(callback_name), "wl_callback#%u",
 		       wl_proxy_get_id((struct wl_proxy *) callback));
 	assert(ret > 0 && ret < (int)sizeof(callback_name) &&
 	       "callback name creation failed (possibly truncated)");
@@ -456,7 +456,7 @@ client_test_queue_destroy_default_with_attached_proxies(void)
 	/* Check that the log does not contain any warning about the attached
 	 * wl_callback proxy. */
 	log = maybe_map_file(client_log_fd, &log_len);
-	ret = snprintf(callback_name, sizeof(callback_name), "wl_callback@%u",
+	ret = snprintf(callback_name, sizeof(callback_name), "wl_callback#%u",
 		       wl_proxy_get_id((struct wl_proxy *) callback));
 	assert(ret > 0 && ret < (int)sizeof(callback_name) &&
 	       "callback name creation failed (possibly truncated)");
