@@ -146,6 +146,10 @@ tests = {
 		'headers-protocol-core-test.c',
 	],
 	'os-wrappers-test': [],
+	'proxy-test': [
+		wayland_client_protocol_h,
+		wayland_server_protocol_h,
+	],
 }
 
 foreach test_name, test_extra_sources: tests
