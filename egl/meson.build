@@ -9,7 +9,8 @@ wayland_egl = library(
 	install: true
 )
 
-executable('wayland-egl-abi-check', 'wayland-egl-abi-check.c')
+wayland_egl_abi_check = executable('wayland-egl-abi-check', 'wayland-egl-abi-check.c')
+test('wayland-egl abi check', wayland_egl_abi_check)
 
 nm_path = find_program('nm').full_path()
 
