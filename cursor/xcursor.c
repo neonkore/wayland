@@ -585,6 +585,7 @@ xcursor_build_fullname(const char *dir, const char *subdir, const char *file)
 {
 	char *full;
 	size_t full_size;
+	int ret;
 
 	if (!dir || !subdir || !file)
 		return NULL;
@@ -593,7 +594,11 @@ xcursor_build_fullname(const char *dir, const char *subdir, const char *file)
 	full = malloc(full_size);
 	if (!full)
 		return NULL;
-	snprintf(full, full_size, "%s/%s/%s", dir, subdir, file);
+	ret = snprintf(full, full_size, "%s/%s/%s", dir, subdir, file);
+	if (ret < 0) {
+		free(full);
+		return NULL;
+	}
 	return full;
 }
 
